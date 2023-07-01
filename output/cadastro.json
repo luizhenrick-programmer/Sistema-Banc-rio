@@ -1,0 +1,12 @@
+{
+	"NOME": "Luiz Henrick de Abreu",
+	"NASCIMENTO": "9/2/2005",
+	"Dados Pessoais":[
+		{"CPF": "1384246586"},
+		{"RG": "8026564"},
+		{"RUA": "Rua Padre Thiago"},
+		{"NÚMERO": "90"},
+		{"CIDADE":"Formosa"},
+		{"ESTADO":"Goias"}
+	]
+}
