@@ -148,8 +148,8 @@ int verificarUsuario(char* usuario) {
         linha[strcspn(linha, "\n")] = '\0'; // Remove a quebra de linha
 
         // Verifica se a linha atual contém o username
-        if (strstr(linha, " USERNAME: ") != NULL) {
-            char* username = linha + strlen(" USERNAME: ");
+        if (strstr(linha, "USERNAME: ") != NULL) {
+            char* username = linha + strlen("USERNAME: ");
             if (strcmp(usuario, username) == 0) {
                 fclose(arquivo);
                 return 1; // Indica que o usuário foi encontrado
