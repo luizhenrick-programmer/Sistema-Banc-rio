@@ -14,6 +14,7 @@ char buffer[CARACTERES];
 typedef enum { false, true } bool;
 int pessoas = 0;
 float saque;
+int opcao;
 
 
 void logomarca() {
@@ -136,7 +137,7 @@ void criar_arquivo(char* nome_arquivo) {
 }
 
 
-int verificarUsuario(char* usuario) {
+int verificarUsuario(char* usuario, char* senha) {
     FILE* arquivo = fopen("cadastro.txt", "r");
     if (arquivo == NULL) {
         printf("\nErro ao abrir o arquivo");
@@ -149,16 +150,27 @@ int verificarUsuario(char* usuario) {
 
         // Verifica se a linha atual contém o username
         if (strstr(linha, "USERNAME: ") != NULL) {
-            char* username = linha + strlen("USERNAME: ");
-            if (strcmp(usuario, username) == 0) {
-                fclose(arquivo);
-                return 1; // Indica que o usuário foi encontrado
+            char* token = strtok(linha, " "); // Separa a linha em tokens pelo espaço em branco
+            while (token != NULL) {
+                if (strcmp(usuario, token) == 0) {
+                    fgets(linha, CARACTERES, arquivo); // Lê a próxima linha (correspondente à senha)
+                    linha[strcspn(linha, "\n")] = '\0'; // Remove a quebra de linha
+                    token = strtok(linha, " "); // Separa a linha em tokens pelo espaço em branco
+                    while (token != NULL) {
+                        if (strcmp(senha, token) == 0) {
+                            fclose(arquivo);
+                            return 1; // Indica que o usuário e senha foram encontrados
+                        }
+                        token = strtok(NULL, " "); // Avança para o próximo token
+                    }
+                }
+                token = strtok(NULL, " "); // Avança para o próximo token
             }
         }
     }
 
     fclose(arquivo);
-    return 0; // Indica que o usuário não foi encontrado
+    return 0; // Indica que o usuário e/ou senha não foram encontrados
 }
 
 
@@ -500,29 +512,28 @@ int cadastrar_usuario(usuarios *usuario) {
     }
     // CRIANDO ARQUIVO PARA ARMAZENAR DADOS CADASTRADOS
     FILE* cadastro;
-    cadastro = fopen("cadastro.txt", "w+");
+    cadastro = fopen("cadastro.txt", "a+");
     // Verificar se a abertura do arquivo foi bem-sucedida
     if (cadastro == NULL) {
         printf("Erro ao abrir o arquivo.\n");
         return 1;
     }
     // Escreve os dados do usuário no final do arquivo
-    fseek(cadastro, 0, SEEK_END);
-    fprintf(cadastro, "NOME: %s; ", usuario->nome);
-    fprintf(cadastro, "DIA: %.2d; ", usuario->nascimento.dia);
-    fprintf(cadastro, "MÊS: %.2d; ", usuario->nascimento.ano);
-    fprintf(cadastro, "ANO: %.2d; ", usuario->nascimento.mes);
-    fprintf(cadastro, "CPF: %d; ", usuario->CPF);
-    fprintf(cadastro, "RG: %d; ", usuario->RG);
-    fprintf(cadastro, "RUA: %s; ", usuario->endereco.rua);
-    fprintf(cadastro, "NÚMERO: %d; ", usuario->endereco.numero);
-    fprintf(cadastro, "SETOR: %s; ", usuario->endereco.setor);
-    fprintf(cadastro, "CIDADE: %s; ", usuario->endereco.cidade);
-    fprintf(cadastro, "ESTADO: %s; ", usuario->endereco.estado);
-    fprintf(cadastro, "CEP: %d; ", usuario->endereco.cep);
-    fprintf(cadastro, "NUMEROCONTA: %d; ", usuario->numeroConta);
-    fprintf(cadastro, "USERNAME: %s; ", usuario->username);
-    fprintf(cadastro, "PASSWORD: %s; ", usuario->password);
+    fprintf(cadastro, "NOME: %s ", usuario->nome);
+    fprintf(cadastro, "DIA: %.2d ", usuario->nascimento.dia);
+    fprintf(cadastro, "MÊS: %.2d ", usuario->nascimento.ano);
+    fprintf(cadastro, "ANO: %d ", usuario->nascimento.mes);
+    fprintf(cadastro, "CPF: %d ", usuario->CPF);
+    fprintf(cadastro, "RG: %d ", usuario->RG);
+    fprintf(cadastro, "RUA: %s ", usuario->endereco.rua);
+    fprintf(cadastro, "NÚMERO: %d ", usuario->endereco.numero);
+    fprintf(cadastro, "SETOR: %s ", usuario->endereco.setor);
+    fprintf(cadastro, "CIDADE: %s ", usuario->endereco.cidade);
+    fprintf(cadastro, "ESTADO: %s ", usuario->endereco.estado);
+    fprintf(cadastro, "CEP: %d ", usuario->endereco.cep);
+    fprintf(cadastro, "NUMEROCONTA: %d ", usuario->numeroConta);
+    fprintf(cadastro, "USERNAME: %s ", usuario->username);
+    fprintf(cadastro, "PASSWORD: %s ", usuario->password);
     fprintf(cadastro, "SALDO: %.2f\n", usuario->saldo);
 
     // Fechar o arquivo
@@ -539,11 +550,52 @@ void acessar_sistema() {
     printf("Nome de Usuário: ");
     fgets(buffer, sizeof(buffer), stdin);
     buffer[strcspn(buffer, "\n")] = '\0';
-    if (verificarUsuario(buffer)) {
-        printf("Usuário existe.\n");
-        system("pause");
+    if (verificarUsuario(buffer, NULL)) {
+        printf("Senha de Usuário: ");
+        fgets(buffer, sizeof(buffer), stdin);
+        buffer[strcspn(buffer, "\n")] = '\0';
+        if (verificarUsuario(NULL, buffer)){
+            printf("ABRINDO SISTEMA...");
+            sleep(3);
+        }
     } else {
-        printf("Usuário não existe.\n");
+        printf("Usuário não encontrado.\n");
+        printf("Deseja se cadastrar para ter acesso ao sistema? [Caso digite NÃO o sistema se encerará]\n");
+        printf("-----------------------");
+        printf("+      [ 1 ] SIM      +");
+        printf("+      [ 2 ] NÃO      +");
+        printf("-----------------------");
+        while (1) {
+            printf("\nSua opção: ");
+            fgets(buffer, sizeof(buffer), stdin);
+            buffer[strcspn(buffer, "\n")] = '\0';
+            if (strcmp(buffer, "") == 0) {
+                printf("Opção Inválida. Por favor digite uma opção válida...\n");
+                continue;
+            } else {
+                int numerico = 1;
+                for (int i = 0; i < strlen(buffer); i++) {
+                    if(!isdigit(buffer[i])){
+                        numerico = 0;
+                    }
+                }
+                if (!numerico) {
+                    printf("Opção Inválida. Por favor digite uma opção válida...\n");
+                    continue;
+                }
+                sscanf(buffer,"%d", &opcao);
+                if (opcao < 1 || opcao > 2) {
+                    printf("Opção Inválida. Por favor digite uma opção válida...\n");
+                    continue;
+                } else if (opcao == 1){
+                    usuarios Cliente[1];
+                    cadastrar_usuario(Cliente);
+                    break;
+                } else if (opcao == 2){
+                    break;
+                }
+            }
+        }
         system("pause");
     }
 }
@@ -555,10 +607,10 @@ int main() {
     system("cls");
     logomarca();
     system("pause");
-    system("cls");
-    cabecalho();
-    menu_principal();
     do {
+        system("cls");
+        cabecalho();
+        menu_principal();
         printf("\nDigite a opção requerida: ");
         scanf("%d", &opcao);
         switch (opcao) {
@@ -570,11 +622,8 @@ int main() {
                 continue;
             break;
             default:
-                while (opcao > 3 || opcao < 1) {
-                    printf("\nOpção Inválida! Tente novamente...");
-                    printf("\nDigite a opção requerida: ");
-                    scanf("%d", &opcao);
-                }
+                printf("\nOpção Inválida! Tente novamente...");
+                continue;
         }
     } while (opcao != 3);
     printf("\nSAINDO...");
