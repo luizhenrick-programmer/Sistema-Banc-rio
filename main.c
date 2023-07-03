@@ -15,8 +15,6 @@ typedef enum { false, true } bool;
 int pessoas = 0;
 float saque;
 int opcao;
-char usuario[CARACTERES];
-char senha[CARACTERES];
 
 
 void logomarca() {
@@ -558,13 +556,12 @@ int cadastrar_usuario(usuarios *usuario) {
 
 
 void acessar_sistema() {
-    system("cls");
-    criar_arquivo("cadastro");
-    cabecalho();
-    printf("Para iniciar o login informe: \n");
-    fflush(stdin);
+    char usuario[CARACTERES]; 
+    char senha[CARACTERES];
+
     printf("Nome de Usuário: ");
-    fgets(usuario, sizeof(usuario), stdin);
+    fflush(stdin);
+    fgets(usuario, CARACTERES, stdin);
     usuario[strcspn(usuario, "\n")] = '\0';
 
     int usuarioValido = verificarUsuario(usuario, NULL);
@@ -572,7 +569,8 @@ void acessar_sistema() {
     if (usuarioValido == 2) {
         while (1) {
             printf("Senha de Usuário: ");
-            fgets(senha, sizeof(senha), stdin);
+            fflush(stdin);
+            fgets(senha, CARACTERES, stdin);
             senha[strcspn(senha, "\n")] = '\0';
 
             int senhaValida = verificarUsuario(usuario, senha);
@@ -589,7 +587,8 @@ void acessar_sistema() {
         printf("Usuário válido, mas a senha está incorreta.\n");
         while (1) {
             printf("Digite a senha novamente: ");
-            fgets(senha, sizeof(senha), stdin);
+            fflush(stdin);
+            fgets(senha, CARACTERES, stdin);
             senha[strcspn(senha, "\n")] = '\0';
 
             int senhaValida = verificarUsuario(usuario, senha);
@@ -642,8 +641,8 @@ void acessar_sistema() {
                 }
             }
         }
-        system("pause");
     }
+    system("pause");
 }
 
 
