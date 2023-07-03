@@ -15,6 +15,8 @@ typedef enum { false, true } bool;
 int pessoas = 0;
 float saque;
 int opcao;
+char usuario[CARACTERES];
+char senha[CARACTERES];
 
 
 void logomarca() {
@@ -137,7 +139,7 @@ void criar_arquivo(char* nome_arquivo) {
 }
 
 
-int verificarUsuario(char* usuario, char* senha) {
+int verificarUsuario(const char* usuario, const char* senha) {
     FILE* arquivo = fopen("cadastro.txt", "r");
     if (arquivo == NULL) {
         printf("\nErro ao abrir o arquivo");
@@ -145,32 +147,42 @@ int verificarUsuario(char* usuario, char* senha) {
     }
 
     char linha[CARACTERES];
+    int encontrouUsuario = 0;
+    int senhaCorreta = 0;
+
     while (fgets(linha, CARACTERES, arquivo) != NULL) {
         linha[strcspn(linha, "\n")] = '\0'; // Remove a quebra de linha
 
         // Verifica se a linha atual contém o username
         if (strstr(linha, "USERNAME: ") != NULL) {
-            char* token = strtok(linha, " "); // Separa a linha em tokens pelo espaço em branco
+            char* token = strtok(linha, " ");
             while (token != NULL) {
                 if (strcmp(usuario, token) == 0) {
-                    fgets(linha, CARACTERES, arquivo); // Lê a próxima linha (correspondente à senha)
-                    linha[strcspn(linha, "\n")] = '\0'; // Remove a quebra de linha
-                    token = strtok(linha, " "); // Separa a linha em tokens pelo espaço em branco
-                    while (token != NULL) {
-                        if (strcmp(senha, token) == 0) {
-                            fclose(arquivo);
-                            return 1; // Indica que o usuário e senha foram encontrados
-                        }
-                        token = strtok(NULL, " "); // Avança para o próximo token
-                    }
+                    encontrouUsuario = 1;
+                    break;
                 }
-                token = strtok(NULL, " "); // Avança para o próximo token
+                token = strtok(NULL, " ");
+            }
+        }
+
+        // Se o usuário foi encontrado, verifica a senha
+        if (encontrouUsuario && strstr(linha, "PASSWORD: ") != NULL) {
+            char* token = strtok(linha, " ");
+            token = strtok(NULL, " "); // Avança para o próximo token (que deve conter a senha)
+            if (token != NULL && strcmp(senha, token) == 0) {
+                senhaCorreta = 1;
+                break;
             }
         }
     }
 
     fclose(arquivo);
-    return 0; // Indica que o usuário e/ou senha não foram encontrados
+
+    if (encontrouUsuario && senhaCorreta) {
+        return 1; // Indica que o usuário e senha estão corretos
+    } else {
+        return 0; // Indica que o usuário ou senha estão incorretos
+    }
 }
 
 
@@ -548,23 +560,29 @@ void acessar_sistema() {
     printf("Para iniciar o login informe: \n");
     fflush(stdin);
     printf("Nome de Usuário: ");
-    fgets(buffer, sizeof(buffer), stdin);
-    buffer[strcspn(buffer, "\n")] = '\0';
-    if (verificarUsuario(buffer, NULL)) {
-        printf("Senha de Usuário: ");
-        fgets(buffer, sizeof(buffer), stdin);
-        buffer[strcspn(buffer, "\n")] = '\0';
-        if (verificarUsuario(NULL, buffer)){
-            printf("ABRINDO SISTEMA...");
-            sleep(3);
+    fgets(usuario, sizeof(usuario), stdin);
+    usuario[strcspn(usuario, "\n")] = '\0';
+    if (verificarUsuario(usuario, NULL)) {
+        while (1) {
+            printf("Senha de Usuário: ");
+            fgets(senha, sizeof(senha), stdin);
+            senha[strcspn(senha, "\n")] = '\0';
+            if (verificarUsuario(usuario, senha)){
+                printf("\nABRINDO SISTEMA...");
+                sleep(3);
+                break;
+            } else {
+                printf("Senha incorreta. Tente novamente...\n");
+                continue;
+            }
         }
     } else {
         printf("Usuário não encontrado.\n");
         printf("Deseja se cadastrar para ter acesso ao sistema? [Caso digite NÃO o sistema se encerará]\n");
-        printf("-----------------------");
-        printf("+      [ 1 ] SIM      +");
-        printf("+      [ 2 ] NÃO      +");
-        printf("-----------------------");
+        printf("-----------------------\n");
+        printf("+      [ 1 ] SIM      +\n");
+        printf("+      [ 2 ] NÃO      +\n");
+        printf("-----------------------\n");
         while (1) {
             printf("\nSua opção: ");
             fgets(buffer, sizeof(buffer), stdin);
