@@ -169,8 +169,10 @@ int verificarUsuario(const char* usuario, const char* senha) {
         if (encontrouUsuario && strstr(linha, "PASSWORD: ") != NULL) {
             char* token = strtok(linha, " ");
             token = strtok(NULL, " "); // Avança para o próximo token (que deve conter a senha)
-            if (token != NULL && strcmp(senha, token) == 0) {
-                senhaCorreta = 1;
+            if (token != NULL) {
+                if (senha != NULL && strcmp(senha, token) == 0) {
+                    senhaCorreta = 1;
+                }
                 break;
             }
         }
@@ -179,9 +181,11 @@ int verificarUsuario(const char* usuario, const char* senha) {
     fclose(arquivo);
 
     if (encontrouUsuario && senhaCorreta) {
-        return 1; // Indica que o usuário e senha estão corretos
+        return 2; // Indica que o usuário e senha estão corretos
+    } else if (encontrouUsuario) {
+        return 1; // Indica que o usuário é válido, mas a senha está incorreta
     } else {
-        return 0; // Indica que o usuário ou senha estão incorretos
+        return 0; // Indica que o usuário não foi encontrado
     }
 }
 
@@ -562,38 +566,62 @@ void acessar_sistema() {
     printf("Nome de Usuário: ");
     fgets(usuario, sizeof(usuario), stdin);
     usuario[strcspn(usuario, "\n")] = '\0';
-    if (verificarUsuario(usuario, NULL)) {
+
+    int usuarioValido = verificarUsuario(usuario, NULL);
+
+    if (usuarioValido == 2) {
         while (1) {
             printf("Senha de Usuário: ");
             fgets(senha, sizeof(senha), stdin);
             senha[strcspn(senha, "\n")] = '\0';
-            if (verificarUsuario(usuario, senha)){
+
+            int senhaValida = verificarUsuario(usuario, senha);
+
+            if (senhaValida == 2) {
                 printf("\nABRINDO SISTEMA...");
                 sleep(3);
                 break;
             } else {
                 printf("Senha incorreta. Tente novamente...\n");
-                continue;
+            }
+        }
+    } else if (usuarioValido == 1) {
+        printf("Usuário válido, mas a senha está incorreta.\n");
+        while (1) {
+            printf("Digite a senha novamente: ");
+            fgets(senha, sizeof(senha), stdin);
+            senha[strcspn(senha, "\n")] = '\0';
+
+            int senhaValida = verificarUsuario(usuario, senha);
+
+            if (senhaValida == 2) {
+                printf("\nABRINDO SISTEMA...");
+                sleep(3);
+                break;
+            } else {
+                printf("Senha incorreta. Tente novamente...\n");
             }
         }
     } else {
         printf("Usuário não encontrado.\n");
-        printf("Deseja se cadastrar para ter acesso ao sistema? [Caso digite NÃO o sistema se encerará]\n");
+        printf("Deseja se cadastrar para ter acesso ao sistema? [Caso digite NÃO o sistema se encerrará]\n");
         printf("-----------------------\n");
         printf("+      [ 1 ] SIM      +\n");
         printf("+      [ 2 ] NÃO      +\n");
         printf("-----------------------\n");
+
         while (1) {
             printf("\nSua opção: ");
             fgets(buffer, sizeof(buffer), stdin);
             buffer[strcspn(buffer, "\n")] = '\0';
+
             if (strcmp(buffer, "") == 0) {
                 printf("Opção Inválida. Por favor digite uma opção válida...\n");
                 continue;
             } else {
                 int numerico = 1;
                 for (int i = 0; i < strlen(buffer); i++) {
-                    if(!isdigit(buffer[i])){
+                    if (!isdigit(buffer[i])) {
                         numerico = 0;
                     }
                 }
@@ -605,11 +633,11 @@ void acessar_sistema() {
                 if (opcao < 1 || opcao > 2) {
                     printf("Opção Inválida. Por favor digite uma opção válida...\n");
                     continue;
-                } else if (opcao == 1){
+                } else if (opcao == 1) {
                     usuarios Cliente[1];
                     cadastrar_usuario(Cliente);
                     break;
-                } else if (opcao == 2){
+                } else if (opcao == 2) {
                     break;
                 }
             }
