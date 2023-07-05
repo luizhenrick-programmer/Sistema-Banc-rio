@@ -5,6 +5,7 @@
 #include "time.h" // BIBLIOTECA DE TEMPO
 #define CARACTERES 250 // CARACTERES DAS STRINGS
 #define MAX_TRANSACTIONS 100 // MÁXIMO DE REGISTRO DE TRANSAÇÕES
+#define NUM_CLIENTES 1000 // NÚMERO DE USUÁRIO DO BANCO
 
 
 // STRUCT PARA DATA DE NASCIMENTO
@@ -47,7 +48,6 @@ typedef enum { false, true } bool;
 char buffer[CARACTERES];
 char usuario[CARACTERES]; 
 char senha[CARACTERES];
-int pessoas = 0;
 float saldo;
 float saque;
 float deposito;
@@ -179,28 +179,29 @@ void menu_banco() {
     animarTexto("Selecione o serviço que deseja utilizar:", 50);
     sleep(2);
     printf("\n");
-    animarTexto("----------------------------------------\n", 50);
-    animarTexto("+  [ 1 ]  VERIFICAR SALDO DA CONTA     +\n", 50);
-    animarTexto("+  [ 2 ]  SACAR DINHEIRO DA CONTA      +\n", 50);
-    animarTexto("+  [ 3 ]  DEPOSITAR DINHEIRO NA CONTA  +\n", 50);
-    animarTexto("+  [ 4 ]  TRANSFERIR PARA OUTRA CONTA  +\n", 50);
-    animarTexto("+  [ 5 ]  REALIZAR LOGOUT DA CONTA     +\n", 50);
-    animarTexto("----------------------------------------\n", 50);
+    animarTexto("----------------------------------------\n", 10);
+    animarTexto("+  [ 1 ]  VERIFICAR SALDO DA CONTA     +\n", 10);
+    animarTexto("+  [ 2 ]  SACAR DINHEIRO DA CONTA      +\n", 10);
+    animarTexto("+  [ 3 ]  DEPOSITAR DINHEIRO NA CONTA  +\n", 10);
+    animarTexto("+  [ 4 ]  TRANSFERIR PARA OUTRA CONTA  +\n", 10);
+    animarTexto("+  [ 5 ]  REALIZAR LOGOUT DA CONTA     +\n", 10);
+    animarTexto("----------------------------------------\n", 10);
     printf("\n\n");
 }
 
 
-void imprimirSaldo() {
-    printf("\n");
-    animarTexto("Selecione o serviço que deseja utilizar:", 50);
+int imprimirSaldo(const char* usuario) {
+    system("cls");
     sleep(2);
     printf("\n");
     printf("----------------------------------------\n");
     animarTexto("+          VERIFICANDO SALDO...        +\n", 50);
     printf("----------------------------------------\n");
     printf("\n\n");
-    printf("Seu saldo atual: R$ %f", saldo);
+    obterSaldo(usuario, &saldo);
+    printf("Seu saldo atual: R$ %.2f", saldo);
     printf("\n");
+    system("pause");
 }
 
 
@@ -368,7 +369,7 @@ bool validar_CEP(const char* cep) {
 }
 
 
-int obterSaldo(char* usuario, float* saldof) {
+int obterSaldo(const char* usuario, float* saldof) {
     FILE* arquivo = fopen("cadastro.txt", "r");
     if (arquivo == NULL) {
         printf("\nErro ao abrir o arquivo");
@@ -406,6 +407,112 @@ int obterSaldo(char* usuario, float* saldof) {
     fclose(arquivo);
 
     return 0;
+}
+
+
+int modificarSaldo(const char* usuario, float novosaldo) {
+    FILE* arquivo = fopen("cadastro.txt", "w");
+    if (arquivo == NULL) {
+        printf("\nErro ao abrir o arquivo");
+        return 0;
+    }
+
+    char linha[CARACTERES];
+    int encontrouUsuario = 0;
+    while (fgets(linha, CARACTERES, arquivo) != NULL) {
+        linha[strcspn(linha, "\n")] = '\0';
+
+        if (strstr(linha, "USERNAME: ") != NULL) {
+            char* token = strtok(linha, " ");
+            while (token != NULL) {
+                if (strcmp(usuario, token) == 0) {
+                    encontrouUsuario = 1;
+                    break;
+                }
+                token = strtok(NULL, " ");
+            }
+        }
+
+        if (encontrouUsuario && strstr(linha, "SALDO: ") != NULL) {
+            char* token = strtok(linha, " ");
+            token = strtok(NULL, " ");
+            if (token != NULL) {
+                long int posicao = ftell(arquivo);
+                fseek(arquivo, posicao - strlen(buffer), SEEK_SET);
+                fprintf(arquivo, "%.2f\n", novosaldo);
+                fclose(arquivo);
+                printf("ARQUIVO EDITADO!");
+                return 1;
+            }
+            break;
+        } else {
+            printf("Usuario nao encontrado");
+        }
+    }
+
+    fclose(arquivo);
+
+    return 0;
+}
+
+
+int sacarSaldo(const char* usuario) {
+    system("cls");
+    printf("\n");
+    sleep(1);
+    printf("----------------------------------------\n");
+    animarTexto("+      ANÁLISE DE RETIRADA DE SALDO    +\n", 50);
+    printf("----------------------------------------\n");
+    while (1) {
+        animarTexto("\n\nDigite o valor que deseja retirar: R$ ", 50);
+        fgets(buffer, sizeof(buffer), stdin);
+        buffer[strcspn(buffer, "\n")] = '\0';
+        obterSaldo(usuario, &saldo);
+        if (strcmp(buffer, "") == 0) {
+            printf("\n\n");
+            sleep(2);
+            printf("----------------------------------------\n");
+            animarTexto("+               ERRO DE SAQUE          +\n", 50);
+            printf("----------------------------------------\n");
+            animarTexto("\nImpossível realizar saque! O valor não pode ficar vazio...", 50);
+            continue;
+        } else {
+            sscanf(buffer,"%f", &saque);
+            if (saque > saldo) {
+                printf("\n\n");
+                sleep(2);
+                printf("----------------------------------------\n");
+                animarTexto("+           SALDO INSUFICIENTE         +\n", 50);
+                printf("----------------------------------------\n");
+                animarTexto("\nImpossível realizar saque! Solicitação de saque acima do saldo atual...", 50);
+                continue;
+            } else if (saque <= 0){
+                printf("\n\n");
+                sleep(2);
+                printf("----------------------------------------\n");
+                animarTexto("+               ERRO DE SAQUE          +\n", 50);
+                printf("----------------------------------------\n");
+                animarTexto("\nImpossível realizar saque! Solicitação de saque não pode ser igual ou inferior a R$ 00,00...", 50);
+                continue;
+            } else {
+                sleep(1);
+                obterSaldo(usuario, &saldo);
+                saldo = saldo - saque;
+                modificarSaldo(usuario, saldo);
+                printf("----------------------------------------\n");
+                animarTexto("+              SACANDO SALDO...        +\n", 50);
+                printf("----------------------------------------\n");
+                printf("\n\n");
+                sleep(2);
+                printf("----------------------------------------\n");
+                animarTexto("+         SAQUE REALIZADO COM ÊXITO     +\n", 50);
+                printf("----------------------------------------\n");
+                animarTexto("\nSaque efetivado com sucesso! O C-SECUREBAK agradece a preferência!", 50);
+                system("pause");
+                break;
+            }
+        }
+    }
 }
 
 
@@ -744,9 +851,10 @@ void acessar_sistema() {
 int sistema() {
     sistema_titulo();
     do {
+        system("cls");
         menu_banco();
         while (1) {
-            animarTexto("Digite a opção requerida: ", 50);
+            printf("Digite a opção requerida: ", 50);
             fgets(buffer, sizeof(buffer), stdin);
             buffer[strcspn(buffer, "\n")] = '\0';
 
@@ -754,6 +862,7 @@ int sistema() {
                 printf("Opção Inválida. Por favor digite uma opção válida...\n");
                 continue;
             } else {
+                sscanf(buffer,"%d", &opcao);
                 int numerico = 1;
                 for (int i = 0; i < strlen(buffer); i++) {
                     if (!isdigit(buffer[i])) {
@@ -764,16 +873,20 @@ int sistema() {
                     printf("Opção Inválida. Por favor digite uma opção válida...\n");
                     continue;
                 }
-                sscanf(buffer,"%d", &opcao);
                 if (opcao < 1) {
                     printf("Opção Inválida. Por favor digite uma opção válida...\n");
                     continue;
+                } else {
+                    break;
                 }
             }
         }
         switch (opcao) {
             case 1:
-                imprimirSaldo();
+                imprimirSaldo(usuario);
+                break;
+            case 2:
+                sacarSaldo(usuario);
                 break;
             default:
                 printf("\nOpção Inválida! Tente novamente...");
@@ -785,7 +898,7 @@ int sistema() {
 
 
 int main() {
-    usuarios cliente[1];
+    usuarios cliente[100];
     int opcao;
     system("cls");
     logomarca();
