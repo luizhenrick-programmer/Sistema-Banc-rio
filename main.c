@@ -1,88 +1,10 @@
-#include <stdio.h> // BIBLIOTECA PADRÃO
-#include <stdlib.h> // BIBLIOTECA AUXILIAR A PADRÃO
-#include <string.h> // BIBLIOTECA DE STRINGS
-#include <locale.h> // BIBLIOTECA PARA MUDAR O IDIOMA PARA PT_BR
-#include <ctype.h> // BIBLIOTECA DE MANIPULAÇÃO
-#include <time.h> // BIBLIOTECA DE TEMPO
-#include <unistd.h> // BIBLIOTECA DE MILISEGUNDOS
+#include "stdio.h" // BIBLIOTECA PADRÃO
+#include "stdlib.h" // BIBLIOTECA AUXILIAR A PADRÃO
+#include "string.h" // BIBLIOTECA DE STRINGS
+#include "ctype.h" // BIBLIOTECA DE MANIPULAÇÃO
+#include "time.h" // BIBLIOTECA DE TEMPO
 #define CARACTERES 250 // CARACTERES DAS STRINGS
 #define MAX_TRANSACTIONS 100 // MÁXIMO DE REGISTRO DE TRANSAÇÕES
-
-
-// VARIÁEVIS GLOBAIS
-char buffer[CARACTERES];
-typedef enum { false, true } bool;
-int pessoas = 0;
-float saque;
-int opcao;
-
-
-void logomarca() {
-    printf("\n");
-    usleep(500000); //PAUSA O PROGRAMA EM INTERVALOS DE MEIO SEGUNDO
-    //DESIGNER E FRONT-END DA LOGO DO SISTEMA 
-    printf("                                         ??????????    ????????????   ??????   ???     ???????????    ??????????????\n");
-    usleep(500000);
-    printf("                                         ???    ????   ????    ????   ??????   ???     ???????????    ??????????????\n");
-    usleep(500000);
-    printf("                                         ???    ????   ????    ????   ??? ???  ???     ????           ????      ????\n");
-    usleep(500000);
-    printf("                                         ??????????    ????????????   ???  ??? ???     ????           ????      ????\n");
-    usleep(500000);
-    printf("                                         ???    ????   ????    ????   ???   ??????     ????           ????      ????\n");
-    usleep(500000);
-    printf("                                         ???    ????   ????    ????   ???    ?????     ???????????    ??????????????\n");
-    usleep(500000);
-    printf("                                         ??????????    ????    ????   ???    ?????     ???????????    ??????????????\n");
-    usleep(500000);
-    printf("\n\n");
-    usleep(500000);
-    printf("???????????             ????????????   ??????????   ???????????   ????    ????   ????????????     ??????????   ????????????   ????????????   ????     ????\n");
-    usleep(500000);
-    printf("???????????             ?????          ????         ???????????   ????    ????   ?????    ????    ????         ????    ????   ????    ????   ????     ????\n");
-    usleep(500000);
-    printf("????                    ?????          ????         ????          ????    ????   ?????    ????    ????         ????    ????   ????    ????    ???????????\n");
-    usleep(500000);
-    printf("????          ??????    ??????????     ?????????    ????          ????    ????   ????????????     ?????????    ????????????   ????????????       ?????   \n");
-    usleep(500000);
-    printf("????          ??????         ?????     ????         ????          ????    ????   ????????????     ????         ????           ????    ????       ?????   \n");
-    usleep(500000);
-    printf("???????????                  ?????     ????         ???????????   ????????????   ?????    ????    ????         ????           ????    ????       ?????   \n");
-    usleep(500000);
-    printf("???????????           ????????????     ??????????   ???????????   ????????????   ?????    ?????   ??????????   ????           ????    ????       ?????   \n");
-    printf("\n\n");
-    usleep(500000);
-}
-
-
-void cabecalho() {
-    // PÁGINA INICIAL QUE SEMPRE RODARÁ NO LOOP
-    printf("\n\n");
-    printf("++++++++++++++++++++++++++++++++++++++++++++++\n");
-    printf("+                                            +\n");
-    printf("+                    BANCO                   +\n");
-    printf("+                 C-SECUREPAY                +\n");
-    printf("+          Seu banco, sua segurança.         +\n");
-    printf("+      Autenticidade em cada transação.      +\n");
-    printf("+                                            +\n");
-    printf("++++++++++++++++++++++++++++++++++++++++++++++\n");
-    printf("\n\n");
-}
-
-
-void menu_principal() {
-    // PÁGINA DE ENTRADA DO PROGRAMA
-    printf("\n");
-    printf("Bem-vindo ao C-SECUREPAY: O melhor banco para você!");
-    sleep(1);
-    printf("\n");
-    printf("----------------------------------------\n");
-    printf("+  [ 1 ]  CRIAR CONTA NO C-SECUREPAY   +\n");
-    printf("+  [ 2 ]  FAZER LOGIN NO C-SECUREPAY   +\n");
-    printf("+  [ 3 ]  SAIR DO SISTEMA C-SECUREPAY  +\n");
-    printf("----------------------------------------\n");
-    printf("\n\n");
-}
 
 
 // STRUCT PARA DATA DE NASCIMENTO
@@ -120,6 +42,169 @@ typedef struct {
 } usuarios;
 
 
+// VARIÁEVIS GLOBAIS
+typedef enum { false, true } bool;
+char buffer[CARACTERES];
+char usuario[CARACTERES]; 
+char senha[CARACTERES];
+int pessoas = 0;
+float saldo;
+float saque;
+float deposito;
+int opcao;
+
+
+void logomarca() { 
+    printf("\n");
+    usleep(500000);
+    printf("                                                    ?????????????    ????????????   ???????    ????   ???????????    ??????????????\n");
+    usleep(500000);
+    printf("                                                    ????      ????   ????    ????   ????????   ????   ???????????    ??????????????\n");
+    usleep(500000);
+    printf("                                                    ????      ????   ????    ????   ???? ????  ????   ????           ????      ????\n");
+    usleep(500000);
+    printf("                                                    ?????????????    ????????????   ????  ???? ????   ????           ????      ????\n");
+    usleep(500000);
+    printf("                                                    ????      ????   ????    ????   ????   ????????   ????           ????      ????\n");
+    usleep(500000);
+    printf("                                                    ????      ????   ????    ????   ????    ???????   ???????????    ??????????????\n");
+    usleep(500000);
+    printf("                                                    ?????????????    ????    ????   ????     ??????   ???????????    ??????????????\n");
+    usleep(500000);
+    printf("\n\n");
+    usleep(500000);
+    printf("???????????             ????????????   ??????????   ???????????   ????    ????   ???????????     ??????????   ?????????????    ????????????   ???????    ????   ????    ????\n");
+    usleep(500000);
+    printf("???????????             ?????          ????         ???????????   ????    ????   ????    ????    ????         ????      ????   ????    ????   ????????   ????   ????   ????\n");
+    usleep(500000);
+    printf("????                    ?????          ????         ????          ????    ????   ????    ????    ????         ????      ????   ????    ????   ???? ????  ????   ????  ????\n");
+    usleep(500000);
+    printf("????          ??????    ??????????     ?????????    ????          ????    ????   ???????????     ?????????    ?????????????    ????????????   ????  ???? ????   ?????????\n");
+    usleep(500000);
+    printf("????          ??????         ?????     ????         ????          ????    ????   ???????????     ????         ????      ????   ????    ????   ????   ????????   ????  ????\n");
+    usleep(500000);
+    printf("???????????                  ?????     ????         ???????????   ????????????   ????    ????    ????         ????      ????   ????    ????   ????    ???????   ????   ????\n");
+    usleep(500000);
+    printf("???????????           ????????????     ??????????   ???????????   ????????????   ????    ?????   ??????????   ?????????????    ????    ????   ????     ??????   ????    ????\n");
+    printf("\n\n");
+    usleep(500000);
+}
+
+
+// FUNÇÃO PÁGINA INICIAL QUE SEMPRE RODARÁ NO LOOP
+void cabecalho() {
+    printf("\n\n");
+    printf("++++++++++++++++++++++++++++++++++++++++++++++\n");
+    printf("+                                            +\n");
+    printf("+                    BANCO                   +\n");
+    printf("+                 C-SECUREPAY                +\n");
+    printf("+          Seu banco, sua segurança.         +\n");
+    printf("+      Autenticidade em cada transação.      +\n");
+    printf("+                                            +\n");
+    printf("++++++++++++++++++++++++++++++++++++++++++++++\n");
+    printf("\n\n");
+}
+
+
+// FUNÇÃO DA PÁGINA DE ENTRADA DO PROGRAMA
+void menu_principal() {
+    printf("\n");
+    printf("Bem-vindo ao C-SECUREPAY: O melhor banco para você!");
+    sleep(2);
+    printf("\n");
+    printf("----------------------------------------\n");
+    printf("+  [ 1 ]  CRIAR CONTA NO C-SECUREPAY   +\n");
+    printf("+  [ 2 ]  FAZER LOGIN NO C-SECUREPAY   +\n");
+    printf("+  [ 3 ]  SAIR DO SISTEMA C-SECUREPAY  +\n");
+    printf("----------------------------------------\n");
+    printf("\n\n");
+}
+
+void animarTexto(const char* texto, int velocidade) {
+    for (int i = 0; i < strlen(texto); i++) {
+        printf("%c", texto[i]);
+        fflush(stdout);
+        usleep(velocidade * 1000);
+    }
+}
+
+
+void cadastro_titulo() {
+    printf("\n");
+    printf("CARREGANDO INFORMAÇÕES PARA CRIAÇÃO DE CONTA...\n");
+    sleep(1);
+    printf("\n");
+    printf("------------------------------------------------\n");
+    animarTexto("+               CADASTRANDO USUÁRIO           +\n", 50);
+    printf("------------------------------------------------\n");
+    printf("\n\n");
+}
+
+
+void cadastro_finalizado() {
+    printf("\n");
+    sleep(2);
+    printf("\n");
+    printf("-----------------------------------------------\n");
+    animarTexto("+       CADASTRO FINALIZADO COM SUCESSO!      +\n", 50);
+    printf("-----------------------------------------------\n");
+    printf("\n\n");
+}
+
+
+void cadastro_error() {
+    printf("\n");
+    sleep(2);
+    printf("\n");
+    printf("-----------------------------------------------\n");
+    printf("+           ERRO AO FINALIZAR CADASTRO        +\n");
+    printf("-----------------------------------------------\n");
+    printf("\n\n");
+    printf("Infelizmente ocorreu um erro ao finalizar o cadastro. Tente novamente e caso o problema insista converse diretamente com nosso suporte. Atenciosamente equipe C-SUCURE BANK");
+}
+
+
+void sistema_titulo() {
+    printf("\n"); 
+    sleep(1);
+    printf("-----------------------------------------------\n");
+    animarTexto("+              INICIANDO SISTEMA...           +\n", 50);
+    printf("-----------------------------------------------\n");
+    sleep(3);
+}
+
+
+void menu_banco() {
+    printf("\n");
+    animarTexto("Selecione o serviço que deseja utilizar:", 50);
+    sleep(2);
+    printf("\n");
+    animarTexto("----------------------------------------\n", 50);
+    animarTexto("+  [ 1 ]  VERIFICAR SALDO DA CONTA     +\n", 50);
+    animarTexto("+  [ 2 ]  SACAR DINHEIRO DA CONTA      +\n", 50);
+    animarTexto("+  [ 3 ]  DEPOSITAR DINHEIRO NA CONTA  +\n", 50);
+    animarTexto("+  [ 4 ]  TRANSFERIR PARA OUTRA CONTA  +\n", 50);
+    animarTexto("+  [ 5 ]  REALIZAR LOGOUT DA CONTA     +\n", 50);
+    animarTexto("----------------------------------------\n", 50);
+    printf("\n\n");
+}
+
+
+void imprimirSaldo() {
+    printf("\n");
+    animarTexto("Selecione o serviço que deseja utilizar:", 50);
+    sleep(2);
+    printf("\n");
+    printf("----------------------------------------\n");
+    animarTexto("+          VERIFICANDO SALDO...        +\n", 50);
+    printf("----------------------------------------\n");
+    printf("\n\n");
+    printf("Seu saldo atual: R$ %f", saldo);
+    printf("\n");
+}
+
+
+// CRIA O ARQUIVO PARA DATABASE CASO ELE NÃO EXISTA 
 void criar_arquivo(char* nome_arquivo) {
     char nome_com_extensao[CARACTERES + 4];
     if (strlen(nome_arquivo) + 4 > CARACTERES) {
@@ -137,7 +222,153 @@ void criar_arquivo(char* nome_arquivo) {
 }
 
 
+// FUNÇÃO PARA VALIDAÇÃO DE SENHA E USUÁRIO
 int verificarUsuario(const char* usuario, const char* senha) {
+    FILE* arquivo = fopen("cadastro.txt", "r");
+    if (arquivo == NULL) {
+        printf("\nErro ao abrir o arquivo");
+        return 0;
+    }
+    char linha[CARACTERES];
+    int encontrouUsuario = 0;
+    int senhaCorreta = 0;
+    while (fgets(linha, CARACTERES, arquivo) != NULL) {
+        linha[strcspn(linha, "\n")] = '\0';
+        if (strstr(linha, "USERNAME: ") != NULL) {
+            char* token = strtok(linha, " ");
+            while (token != NULL) {
+                if (strcmp(usuario, token) == 0) {
+                    encontrouUsuario = 1;
+                    break;
+                }
+                token = strtok(NULL, " ");
+            }
+        }
+        if (encontrouUsuario && strstr(linha, "PASSWORD: ") != NULL) {
+            char* token = strtok(linha, " ");
+            token = strtok(NULL, " ");
+            if (token != NULL) {
+                if (senha != NULL && strcmp(senha, token) == 0) {
+                    senhaCorreta = 1;
+                }
+                break;
+            }
+        }
+    }
+    fclose(arquivo);
+    if (encontrouUsuario && senhaCorreta) {
+        return 2;
+    } else if (encontrouUsuario) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+
+// FUNÇÃO PARA VERIFICAÇÃO E VALIDAÇÃO DE CPF
+bool validar_CPF(const char* cpf) {
+    if (strlen(cpf) != 11) {
+        return false;
+    }
+    for (int i = 0; i < 11; i++) {
+        if (!isdigit(cpf[i])) {
+            return false;
+        }
+    }
+    bool caracteres_iguais = true;
+    for (int i = 0; i < 11; i++) {
+        if (cpf[i] != cpf[0]) {
+            caracteres_iguais = false;
+            break;
+        }
+    }
+    bool caracteres_negativos = true;
+    for (int i = 0; i < 11; i++) {
+        if (cpf[i] > 0) {
+            caracteres_negativos = false;
+            break;
+        }
+    }
+    if (caracteres_iguais) {
+        return false;
+    }
+    if (caracteres_negativos) {
+        return false;
+    }
+    return true;
+}
+
+
+// FUNÇÃO PARA VERIFICAÇÃO E VALIDAÇÃO DE RG
+bool validar_RG(const char* rg) {
+    if (strlen(rg) != 7) {
+        return false;
+    }
+    for (int i = 0; i < 7; i++) {
+        if (!isdigit(rg[i])) {
+            return false;
+        }
+    }
+    bool caracteres_iguais = true;
+    for (int i = 0; i < 7; i++) {
+        if (rg[i] != rg[0]) {
+            caracteres_iguais = false;
+            break;
+        }
+    }
+    bool caracteres_negativos = true;
+    for (int i = 0; i < 11; i++) {
+        if (rg[i] > 0) {
+            caracteres_negativos = false;
+            break;
+        }
+    }
+    if (caracteres_iguais) {
+        return false;
+    }
+    if (caracteres_negativos) {
+        return false;
+    }
+    return true;
+}
+
+
+// FUNÇÃO PARA VERIFICAÇÃO E VALIDAÇÃO DE CEP
+bool validar_CEP(const char* cep) {
+    if (strlen(cep) != 8) {
+        return false;
+    }
+    for (int i = 0; i < 7; i++) {
+        if (!isdigit(cep[i])) {
+            return false;
+        }
+    }
+    bool caracteres_iguais = true;
+    for (int i = 0; i < 7; i++) {
+        if (cep[i] != cep[0]) {
+            caracteres_iguais = false;
+            break;
+        }
+    }
+    bool caracteres_negativos = true;
+    for (int i = 0; i < 11; i++) {
+        if (cep[i] > 0) {
+            caracteres_negativos = false;
+            break;
+        }
+    }
+    if (caracteres_iguais) {
+        return false;
+    }
+    if (caracteres_negativos) {
+        return false;
+    }
+    return true;
+}
+
+
+int obterSaldo(char* usuario, float* saldof) {
     FILE* arquivo = fopen("cadastro.txt", "r");
     if (arquivo == NULL) {
         printf("\nErro ao abrir o arquivo");
@@ -146,12 +377,9 @@ int verificarUsuario(const char* usuario, const char* senha) {
 
     char linha[CARACTERES];
     int encontrouUsuario = 0;
-    int senhaCorreta = 0;
-
     while (fgets(linha, CARACTERES, arquivo) != NULL) {
-        linha[strcspn(linha, "\n")] = '\0'; // Remove a quebra de linha
+        linha[strcspn(linha, "\n")] = '\0';
 
-        // Verifica se a linha atual contém o username
         if (strstr(linha, "USERNAME: ") != NULL) {
             char* token = strtok(linha, " ");
             while (token != NULL) {
@@ -163,135 +391,34 @@ int verificarUsuario(const char* usuario, const char* senha) {
             }
         }
 
-        // Se o usuário foi encontrado, verifica a senha
-        if (encontrouUsuario && strstr(linha, "PASSWORD: ") != NULL) {
+        if (encontrouUsuario && strstr(linha, "SALDO: ") != NULL) {
             char* token = strtok(linha, " ");
-            token = strtok(NULL, " "); // Avança para o próximo token (que deve conter a senha)
+            token = strtok(NULL, " ");
             if (token != NULL) {
-                if (senha != NULL && strcmp(senha, token) == 0) {
-                    senhaCorreta = 1;
-                }
-                break;
+                *saldof = atof(token);
+                fclose(arquivo);
+                return 1;
             }
+            break;
         }
     }
 
     fclose(arquivo);
 
-    if (encontrouUsuario && senhaCorreta) {
-        return 2; // Indica que o usuário e senha estão corretos
-    } else if (encontrouUsuario) {
-        return 1; // Indica que o usuário é válido, mas a senha está incorreta
-    } else {
-        return 0; // Indica que o usuário não foi encontrado
-    }
-}
-
-
-bool validar_CPF(const char* cpf) {
-    // Verifica se a string tem exatamente 11 caracteres
-    if (strlen(cpf) != 11) {
-        return false;
-    }
-
-    // Verifica se todos os caracteres são números
-    for (int i = 0; i < 11; i++) {
-        if (!isdigit(cpf[i])) {
-            return false;
-        }
-    }
-
-    // Verifica se todos os caracteres são iguais
-    bool caracteres_iguais = true;
-    for (int i = 0; i < 11; i++) {
-        if (cpf[i] != cpf[0]) {
-            caracteres_iguais = false;
-            break;
-        }
-    }
-
-    // Se for verdade, ou seja, se todos forem igual returna falso
-    if (caracteres_iguais) {
-        return false;
-    }
-
-    return true;
-}
-
-
-bool validar_RG(const char* rg) {
-    // Verifica se a string tem exatamente 7 caracteres
-    if (strlen(rg) != 7) {
-        return false;
-    }
-
-    // Verifica se todos os caracteres são números
-    for (int i = 0; i < 7; i++) {
-        if (!isdigit(rg[i])) {
-            return false;
-        }
-    }
-
-    // Verifica se todos os caracteres são iguais
-    bool caracteres_iguais = true;
-    for (int i = 0; i < 7; i++) {
-        if (rg[i] != rg[0]) {
-            caracteres_iguais = false;
-            break;
-        }
-    }
-
-    // Se for verdade, ou seja, se todos forem igual returna falso
-    if (caracteres_iguais) {
-        return false;
-    }
-
-    return true;
-}
-
-
-bool validar_CEP(const char* cep) {
-    // Verifica se a string tem exatamente 8 caracteres
-    if (strlen(cep) != 8) {
-        return false;
-    }
-
-    // Verifica se todos os caracteres são números
-    for (int i = 0; i < 7; i++) {
-        if (!isdigit(cep[i])) {
-            return false;
-        }
-    }
-
-    // Verifica se todos os caracteres são iguais
-    bool caracteres_iguais = true;
-    for (int i = 0; i < 7; i++) {
-        if (cep[i] != cep[0]) {
-            caracteres_iguais = false;
-            break;
-        }
-    }
-
-    // Se for verdade, ou seja, se todos forem igual returna falso
-    if (caracteres_iguais) {
-        return false;
-    }
-
-    return true;
+    return 0;
 }
 
 
 // FUNÇÃO DE CADASTRAMENTO DE USUÁRIOS
 int cadastrar_usuario(usuarios *usuario) {
     system("cls");
-    printf("CARREGANDO INFORMAÇÕES PARA CRIAÇÃO DE CONTA...\n");
+    cadastro_titulo();
     printf("\n");
-    printf("Para que possamos lhe cadastrar por favor insira corretamente os dados requeridos abaixo:\n");
+    animarTexto("Para que possamos lhe cadastrar por favor insira corretamente os dados requeridos abaixo:\n", 50);
     printf("\n");
-    // INICIA O LOOP DE VERIFICAÇÃO DE DADOS
     while (1) {
         fflush(stdin);
-        printf("Nome completo: ");
+        animarTexto("Nome completo: ", 50);
         fgets(usuario->nome, sizeof(usuario->nome), stdin);
         usuario->nome[strcspn(usuario->nome, "\n")] = '\0';
         if (strcmp(usuario->nome, "") == 0 || strlen(usuario->nome) < 10) {
@@ -301,10 +428,9 @@ int cadastrar_usuario(usuarios *usuario) {
             break;
         }
     }
-    printf("Para continuarmos digite sua data de nascimento [DD/MM/YYYY]\n");
-    // INICIA O LOOP DE VERIFICAÇÃO DE DADOS
+    animarTexto("Para continuarmos digite sua data de nascimento [DD/MM/YYYY]\n", 50);
     while (1) {
-        printf("O dia referente ao seu nascimento: ");
+        animarTexto("O dia referente ao seu nascimento: ", 50);
         fgets(buffer, sizeof(buffer), stdin);
         buffer[strcspn(buffer, "\n")] = '\0';
         if (strcmp(buffer, "") == 0) {
@@ -320,9 +446,8 @@ int cadastrar_usuario(usuarios *usuario) {
             }
         }
     }
-    // INICIA O LOOP DE VERIFICAÇÃO DE DADOS
     while (1) {
-        printf("O Mês referente ao seu nascimento: ");
+        animarTexto("O Mês referente ao seu nascimento: ", 50);
         fgets(buffer, sizeof(buffer), stdin);
         buffer[strcspn(buffer, "\n")] = '\0';
         if (strcmp(buffer, "") == 0) {
@@ -338,9 +463,8 @@ int cadastrar_usuario(usuarios *usuario) {
             }
         }
     }
-    // INICIA O LOOP DE VERIFICAÇÃO DE DADOS
     while (1) {
-        printf("O ano referente ao seu nascimento: ");
+        animarTexto("O ano referente ao seu nascimento: ", 50);
         fgets(buffer, sizeof(buffer), stdin);
         buffer[strcspn(buffer, "\n")] = '\0';
         if (strcmp(buffer, "") == 0) {
@@ -356,10 +480,9 @@ int cadastrar_usuario(usuarios *usuario) {
             }
         }
     }
-    printf("Informe os seguintes Dados Pessoais: [SOMENTE NÚMEROS]\n");
-    // INICIA O LOOP DE VERIFICAÇÃO DE DADOS
+    animarTexto("Informe os seguintes Dados Pessoais: [SOMENTE NÚMEROS]\n", 50);
     while (1) {
-        printf("CPF: ");
+        animarTexto("CPF: ", 50);
         fgets(buffer, sizeof(buffer), stdin);
         buffer[strcspn(buffer, "\n")] = '\0';
         if (strcmp(buffer, "") == 0 || !validar_CPF(buffer)) {
@@ -370,9 +493,8 @@ int cadastrar_usuario(usuarios *usuario) {
             break;
         }
     }
-    // INICIA O LOOP DE VERIFICAÇÃO DE DADOS
     while (1) {
-        printf("RG: ");
+        animarTexto("RG: ", 50);
         fgets(buffer, sizeof(buffer), stdin);
         buffer[strcspn(buffer, "\n")] = '\0';
         if (strcmp(buffer, "") == 0 || !validar_RG(buffer)) {
@@ -383,10 +505,9 @@ int cadastrar_usuario(usuarios *usuario) {
             break;
         }
     }
-    printf("Digite seu endereço abaixo:\n");
-    // INICIA O LOOP DE VERIFICAÇÃO DE DADOS
+    animarTexto("Digite seu endereço abaixo:\n", 50);
     while (1) {
-        printf("Rua: ");
+        animarTexto("Rua: ", 50);
         fgets(usuario->endereco.rua, sizeof(usuario->endereco.rua), stdin);
         usuario->endereco.rua[strcspn(usuario->endereco.rua, "\n")] = '\0';
         if (strcmp(usuario->endereco.rua, "") == 0) {
@@ -396,9 +517,8 @@ int cadastrar_usuario(usuarios *usuario) {
             break;
         }
     }
-    // INICIA O LOOP DE VERIFICAÇÃO DE DADOS
     while (1) {
-        printf("Número: ");
+        animarTexto("Número: ", 50);
         fgets(buffer, sizeof(buffer), stdin);
         buffer[strcspn(buffer, "\n")] = '\0';
         if (strcmp(buffer, "") == 0) {
@@ -423,9 +543,8 @@ int cadastrar_usuario(usuarios *usuario) {
                 
         }
     }
-    // INICIA O LOOP DE VERIFICAÇÃO DE DADOS
     while (1) {
-        printf("Setor Residencial: ");
+        animarTexto("Setor Residencial: ", 50);
         fgets(usuario->endereco.setor, sizeof(usuario->endereco.setor), stdin);
         usuario->endereco.setor[strcspn(usuario->endereco.setor, "\n")] = '\0';
         if (strcmp(usuario->endereco.setor, "") == 0) {
@@ -435,9 +554,8 @@ int cadastrar_usuario(usuarios *usuario) {
             break;
         }
     }
-    // INICIA O LOOP DE VERIFICAÇÃO DE DADOS
     while (1) {
-        printf("Cidade: ");
+        animarTexto("Cidade: ", 50);
         fgets(usuario->endereco.cidade, sizeof(usuario->endereco.cidade), stdin);
         usuario->endereco.cidade[strcspn(usuario->endereco.cidade, "\n")] = '\0';
         if (strcmp(usuario->endereco.cidade, "") == 0) {
@@ -447,9 +565,8 @@ int cadastrar_usuario(usuarios *usuario) {
             break;
         }
     }
-    // INICIA O LOOP DE VERIFICAÇÃO DE DADOS
     while (1) {
-        printf("Estado: ");
+        animarTexto("Estado: ", 50);
         fgets(usuario->endereco.estado, sizeof(usuario->endereco.estado), stdin);
         usuario->endereco.estado[strcspn(usuario->endereco.estado, "\n")] = '\0';
         if (strcmp(usuario->endereco.estado, "") == 0) {
@@ -459,9 +576,8 @@ int cadastrar_usuario(usuarios *usuario) {
             break;
         }
     }
-    // INICIA O LOOP DE VERIFICAÇÃO DE DADOS
     while (1) {
-        printf("CEP: [APENAS NÚMEROS] ");
+        animarTexto("CEP: [APENAS NÚMEROS] ", 50);
         fgets(buffer, sizeof(buffer), stdin);
         buffer[strcspn(buffer, "\n")] = '\0';
         if (strcmp(buffer, "") == 0 || !validar_CEP(buffer)) {
@@ -478,10 +594,9 @@ int cadastrar_usuario(usuarios *usuario) {
     printf("   CADASTRAMENTO DE DADOS CONCLUÍDO COM SUCESSO!  \n");
     printf("--------------------------------------------------\n");
     printf("\n");
-    printf("Após o cadastramento de dados pessoais, agora escolha um nome de usuário e senha para acesso a sua conta\n");
-    // INICIA O LOOP DE VERIFICAÇÃO DE DADOS
+    animarTexto("Após o cadastramento de dados pessoais, agora escolha um nome de usuário e senha para acesso a sua conta\n", 50);
     while (1) {
-        printf("Digite seu nome de usuario: ");
+        animarTexto("Digite seu nome de usuario: ", 50);
         fgets(usuario->username, sizeof(usuario->username), stdin);
         usuario->username[strcspn(usuario->username, "\n")] = '\0';
         if (strcmp(usuario->username, "") == 0) {
@@ -491,9 +606,8 @@ int cadastrar_usuario(usuarios *usuario) {
             break;
         }
     }
-    // INICIA O LOOP DE VERIFICAÇÃO DE DADOS
     while (1) {
-        printf("Digite sua senha de acesso: ");
+        animarTexto("Digite sua senha de acesso: ", 50);
         fgets(usuario->password, sizeof(usuario->password), stdin);
         usuario->password[strcspn(usuario->password, "\n")] = '\0';
         if (strcmp(usuario->password, "") == 0) {
@@ -503,10 +617,9 @@ int cadastrar_usuario(usuarios *usuario) {
             break;
         }
     }
-    printf("Para finalizar informe o valor de depósito que deseja inserir em sua conta: R$ ");
-    // INICIA O LOOP DE VERIFICAÇÃO DE DADOS
+    animarTexto("Para finalizar informe o valor de depósito que deseja inserir em sua conta:\n", 50);
     while (1) {
-        printf("Depósito Inicial: R$ ");
+        animarTexto("Depósito Inicial: R$ ", 50);
         fgets(buffer, sizeof(buffer), stdin);
         buffer[strcspn(buffer, "\n")] = '\0';
         if (strcmp(buffer, "") == 0) {
@@ -524,65 +637,48 @@ int cadastrar_usuario(usuarios *usuario) {
             }
         }
     }
+
     // CRIANDO ARQUIVO PARA ARMAZENAR DADOS CADASTRADOS
     FILE* cadastro;
     cadastro = fopen("cadastro.txt", "a+");
-    // Verificar se a abertura do arquivo foi bem-sucedida
     if (cadastro == NULL) {
-        printf("Erro ao abrir o arquivo.\n");
+        cadastro_error();
         return 1;
     }
-    // Escreve os dados do usuário no final do arquivo
-    fprintf(cadastro, "NOME: %s ", usuario->nome);
-    fprintf(cadastro, "DIA: %.2d ", usuario->nascimento.dia);
-    fprintf(cadastro, "MÊS: %.2d ", usuario->nascimento.ano);
-    fprintf(cadastro, "ANO: %d ", usuario->nascimento.mes);
-    fprintf(cadastro, "CPF: %d ", usuario->CPF);
-    fprintf(cadastro, "RG: %d ", usuario->RG);
-    fprintf(cadastro, "RUA: %s ", usuario->endereco.rua);
-    fprintf(cadastro, "NÚMERO: %d ", usuario->endereco.numero);
-    fprintf(cadastro, "SETOR: %s ", usuario->endereco.setor);
-    fprintf(cadastro, "CIDADE: %s ", usuario->endereco.cidade);
-    fprintf(cadastro, "ESTADO: %s ", usuario->endereco.estado);
-    fprintf(cadastro, "CEP: %d ", usuario->endereco.cep);
-    fprintf(cadastro, "NUMEROCONTA: %d ", usuario->numeroConta);
-    fprintf(cadastro, "USERNAME: %s ", usuario->username);
-    fprintf(cadastro, "PASSWORD: %s ", usuario->password);
-    fprintf(cadastro, "SALDO: %.2f\n", usuario->saldo);
-
-    // Fechar o arquivo
+    fprintf(cadastro, "NOME: %s\n", usuario->nome);
+    fprintf(cadastro, "DIA: %.2d\n", usuario->nascimento.dia);
+    fprintf(cadastro, "MÊS: %.2d\n", usuario->nascimento.ano);
+    fprintf(cadastro, "ANO: %d\n", usuario->nascimento.mes);
+    fprintf(cadastro, "CPF: %d\n", usuario->CPF);
+    fprintf(cadastro, "RG: %d\n", usuario->RG);
+    fprintf(cadastro, "RUA: %s\n", usuario->endereco.rua);
+    fprintf(cadastro, "NÚMERO: %d\n", usuario->endereco.numero);
+    fprintf(cadastro, "SETOR: %s\n", usuario->endereco.setor);
+    fprintf(cadastro, "CIDADE: %s\n", usuario->endereco.cidade);
+    fprintf(cadastro, "ESTADO: %s\n", usuario->endereco.estado);
+    fprintf(cadastro, "CEP: %d\n", usuario->endereco.cep);
+    fprintf(cadastro, "NUMEROCONTA: %d\n", usuario->numeroConta);
+    fprintf(cadastro, "USERNAME: %s\n", usuario->username);
+    fprintf(cadastro, "PASSWORD: %s\n", usuario->password);
+    fprintf(cadastro, "SALDO: %.2f\n\n", usuario->saldo);
     fclose(cadastro);
+    cadastro_finalizado();
 }
 
 
+// FUNÇÃO DE TELA DE LOGIN DO USUÁRIO
 void acessar_sistema() {
-    char usuario[CARACTERES]; 
-    char senha[CARACTERES];
-
     printf("Nome de Usuário: ");
     fflush(stdin);
     fgets(usuario, CARACTERES, stdin);
     usuario[strcspn(usuario, "\n")] = '\0';
-
-    int usuarioValido = verificarUsuario(usuario, NULL);
-
+    printf("Senha de Usuário: ");
+    fflush(stdin);
+    fgets(senha, CARACTERES, stdin);
+    senha[strcspn(senha, "\n")] = '\0';
+    int usuarioValido = verificarUsuario(usuario, senha);
     if (usuarioValido == 2) {
-        while (1) {
-            printf("Senha de Usuário: ");
-            fflush(stdin);
-            fgets(senha, CARACTERES, stdin);
-            senha[strcspn(senha, "\n")] = '\0';
-
-            int senhaValida = verificarUsuario(usuario, senha);
-
-            if (senhaValida == 2) {
-                printf("\nABRINDO SISTEMA...");
-                sleep(3);
-                break;
-            } else {
-                printf("Senha incorreta. Tente novamente...\n");
-            }
-        }
+        sistema();
     } else if (usuarioValido == 1) {
         printf("Usuário válido, mas a senha está incorreta.\n");
         while (1) {
@@ -594,8 +690,7 @@ void acessar_sistema() {
             int senhaValida = verificarUsuario(usuario, senha);
 
             if (senhaValida == 2) {
-                printf("\nABRINDO SISTEMA...");
-                sleep(3);
+                sistema();
                 break;
             } else {
                 printf("Senha incorreta. Tente novamente...\n");
@@ -643,6 +738,49 @@ void acessar_sistema() {
         }
     }
     system("pause");
+}
+
+
+int sistema() {
+    sistema_titulo();
+    do {
+        menu_banco();
+        while (1) {
+            animarTexto("Digite a opção requerida: ", 50);
+            fgets(buffer, sizeof(buffer), stdin);
+            buffer[strcspn(buffer, "\n")] = '\0';
+
+            if (strcmp(buffer, "") == 0) {
+                printf("Opção Inválida. Por favor digite uma opção válida...\n");
+                continue;
+            } else {
+                int numerico = 1;
+                for (int i = 0; i < strlen(buffer); i++) {
+                    if (!isdigit(buffer[i])) {
+                        numerico = 0;
+                    }
+                }
+                if (!numerico) {
+                    printf("Opção Inválida. Por favor digite uma opção válida...\n");
+                    continue;
+                }
+                sscanf(buffer,"%d", &opcao);
+                if (opcao < 1) {
+                    printf("Opção Inválida. Por favor digite uma opção válida...\n");
+                    continue;
+                }
+            }
+        }
+        switch (opcao) {
+            case 1:
+                imprimirSaldo();
+                break;
+            default:
+                printf("\nOpção Inválida! Tente novamente...");
+                continue;
+        }
+    
+    } while (opcao != 5);
 }
 
 
