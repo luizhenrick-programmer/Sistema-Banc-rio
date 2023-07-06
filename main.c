@@ -2,6 +2,7 @@
 #include "stdlib.h" // BIBLIOTECA AUXILIAR A PADRÃO
 #include "string.h" // BIBLIOTECA DE STRINGS
 #include "ctype.h" // BIBLIOTECA DE MANIPULAÇÃO
+#include "locale.h" // BIBLIOTECA PARA PT_BR
 #include "time.h" // BIBLIOTECA DE TEMPO
 #define CARACTERES 250 // CARACTERES DAS STRINGS
 #define MAX_TRANSACTIONS 100 // MÁXIMO DE REGISTRO DE TRANSAÇÕES
@@ -183,8 +184,7 @@ void menu_banco() {
     animarTexto("+  [ 1 ]  VERIFICAR SALDO DA CONTA     +\n", 10);
     animarTexto("+  [ 2 ]  SACAR DINHEIRO DA CONTA      +\n", 10);
     animarTexto("+  [ 3 ]  DEPOSITAR DINHEIRO NA CONTA  +\n", 10);
-    animarTexto("+  [ 4 ]  TRANSFERIR PARA OUTRA CONTA  +\n", 10);
-    animarTexto("+  [ 5 ]  REALIZAR LOGOUT DA CONTA     +\n", 10);
+    animarTexto("+  [ 4 ]  REALIZAR LOGOUT DA CONTA     +\n", 10);
     animarTexto("----------------------------------------\n", 10);
     printf("\n\n");
 }
@@ -410,49 +410,46 @@ int obterSaldo(const char* usuario, float* saldof) {
 }
 
 
-int modificarSaldo(const char* usuario, float novosaldo) {
-    FILE* arquivo = fopen("cadastro.txt", "w");
-    if (arquivo == NULL) {
-        printf("\nErro ao abrir o arquivo");
-        return 0;
+void modificarSaldo(const char* arquivo, const char* usuario, float novoSaldo) {
+    FILE* fpOriginal = fopen(arquivo, "r");
+    if (fpOriginal == NULL) {
+        printf("Erro ao abrir o arquivo original.\n");
+        return;
     }
 
-    char linha[CARACTERES];
-    int encontrouUsuario = 0;
-    while (fgets(linha, CARACTERES, arquivo) != NULL) {
-        linha[strcspn(linha, "\n")] = '\0';
-
-        if (strstr(linha, "USERNAME: ") != NULL) {
-            char* token = strtok(linha, " ");
-            while (token != NULL) {
-                if (strcmp(usuario, token) == 0) {
-                    encontrouUsuario = 1;
-                    break;
-                }
-                token = strtok(NULL, " ");
-            }
-        }
-
-        if (encontrouUsuario && strstr(linha, "SALDO: ") != NULL) {
-            char* token = strtok(linha, " ");
-            token = strtok(NULL, " ");
-            if (token != NULL) {
-                long int posicao = ftell(arquivo);
-                fseek(arquivo, posicao - strlen(buffer), SEEK_SET);
-                fprintf(arquivo, "%.2f\n", novosaldo);
-                fclose(arquivo);
-                printf("ARQUIVO EDITADO!");
-                return 1;
-            }
-            break;
-        } else {
-            printf("Usuario nao encontrado");
-        }
+    FILE* fpTemporario = fopen("temporario.txt", "w");
+    if (fpTemporario == NULL) {
+        printf("Erro ao criar o arquivo temporário.\n");
+        fclose(fpOriginal);
+        return;
     }
 
-    fclose(arquivo);
+    char buffer[256];
 
-    return 0;
+    while (fgets(buffer, sizeof(buffer), fpOriginal)) {
+        if (strstr(buffer, "USERNAME: ") != NULL) {
+            char* token = strtok(buffer, ":");
+            token = strtok(NULL, ":");
+            if (strcmp(usuario, token) == 0) {
+                fprintf(fpTemporario, "SALDO: %.2f\n", novoSaldo);
+                continue;
+            }
+        }
+        
+        if (strstr(buffer, "SALDO: ") != NULL) {
+            continue;
+        }
+
+        fputs(buffer, fpTemporario);
+    }
+
+    fclose(fpOriginal);
+    fclose(fpTemporario);
+
+    remove(arquivo);
+    rename("temporario.txt", arquivo);
+
+    printf("Saldo atualizado com sucesso!\n");
 }
 
 
@@ -498,7 +495,7 @@ int sacarSaldo(const char* usuario) {
                 sleep(1);
                 obterSaldo(usuario, &saldo);
                 saldo = saldo - saque;
-                modificarSaldo(usuario, saldo);
+                modificarSaldo("cadastro.txt", usuario, saldo);
                 printf("----------------------------------------\n");
                 animarTexto("+              SACANDO SALDO...        +\n", 50);
                 printf("----------------------------------------\n");
@@ -508,6 +505,61 @@ int sacarSaldo(const char* usuario) {
                 animarTexto("+         SAQUE REALIZADO COM ÊXITO     +\n", 50);
                 printf("----------------------------------------\n");
                 animarTexto("\nSaque efetivado com sucesso! O C-SECUREBAK agradece a preferência!", 50);
+                printf("\n\nSeu saldo atual agora é: R$ %.2f\n", saldo);
+                system("pause");
+                break;
+            }
+        }
+    }
+}
+
+
+int depositarSaldo(const char* usuario) {
+    system("cls");
+    printf("\n");
+    sleep(1);
+    printf("----------------------------------------\n");
+    animarTexto("+           ANÁLISE DE DEPOSITO        +\n", 50);
+    printf("----------------------------------------\n");
+    while (1) {
+        animarTexto("\n\nDigite o valor que deseja depositar: R$ ", 50);
+        fgets(buffer, sizeof(buffer), stdin);
+        buffer[strcspn(buffer, "\n")] = '\0';
+        obterSaldo(usuario, &saldo);
+        if (strcmp(buffer, "") == 0) {
+            printf("\n\n");
+            printf("\n\n");
+            sleep(2);
+            printf("----------------------------------------\n");
+            animarTexto("+               ERRO DE DEPÓSITO       +\n", 50);
+            printf("----------------------------------------\n");
+            animarTexto("\nImpossível realizar depósito! Solicitação de depósito não pode estar vazia...", 50);
+            continue;
+        } else {
+            sscanf(buffer,"%f", &deposito);
+            if (deposito <= 0){
+                printf("\n\n");
+                sleep(2);
+                printf("----------------------------------------\n");
+                animarTexto("+               ERRO DE DEPÓSITO       +\n", 50);
+                printf("----------------------------------------\n");
+                animarTexto("\nImpossível realizar depósito! Solicitação de depósito não pode ser igual ou inferior a R$ 00,00...", 50);
+                continue;
+            } else {
+                sleep(1);
+                obterSaldo(usuario, &saldo);
+                saldo = saldo + deposito;
+                modificarSaldo("cadastro.txt", usuario, saldo);
+                printf("----------------------------------------\n");
+                animarTexto("+            DEPOSITANDO SALDO...      +\n", 50);
+                printf("----------------------------------------\n");
+                printf("\n\n");
+                sleep(2);
+                printf("----------------------------------------\n");
+                animarTexto("+                DEPOSITANDO...        +\n" , 50);
+                printf("----------------------------------------\n");
+                animarTexto("\nDepósito efetivado com sucesso! O C-SECUREBAK agradece a preferência!", 50);
+                printf("\n\nSeu saldo atual agora é: R$ %.2f", saldo);
                 system("pause");
                 break;
             }
@@ -888,16 +940,23 @@ int sistema() {
             case 2:
                 sacarSaldo(usuario);
                 break;
+            case 3:
+                depositarSaldo(usuario);
+                break;
+            case 4:
+                animarTexto("\n\nENCERRANDO SISTEMA...", 50);
+                break;
             default:
                 printf("\nOpção Inválida! Tente novamente...");
                 continue;
         }
     
-    } while (opcao != 5);
+    } while (opcao != 4);
 }
 
 
 int main() {
+    setlocale(LC_ALL, "Portuguese");
     usuarios cliente[100];
     int opcao;
     system("cls");
