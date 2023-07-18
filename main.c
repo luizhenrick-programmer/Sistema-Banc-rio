@@ -1,12 +1,20 @@
-#include "stdio.h" // BIBLIOTECA PADR√ÉO
-#include "stdlib.h" // BIBLIOTECA AUXILIAR A PADR√ÉO
+#include "stdio.h" // BIBLIOTECA PADR√O
+#include "stdlib.h" // BIBLIOTECA AUXILIAR A PADR√O
 #include "string.h" // BIBLIOTECA DE STRINGS
-#include "ctype.h" // BIBLIOTECA DE MANIPULA√á√ÉO
+#include "ctype.h" // BIBLIOTECA DE MANIPULA«√O
 #include "locale.h" // BIBLIOTECA PARA PT_BR
 #include "time.h" // BIBLIOTECA DE TEMPO
 #define CARACTERES 250 // CARACTERES DAS STRINGS
-#define MAX_TRANSACTIONS 100 // M√ÅXIMO DE REGISTRO DE TRANSA√á√ïES
-#define NUM_CLIENTES 1000 // N√öMERO DE USU√ÅRIO DO BANCO
+#define MAX_TRANSACTIONS 100 // M¡XIMO DE REGISTRO DE TRANSA«’ES
+#define NUM_CONTAS 10000000
+
+
+// STRUCT PARA ACESSO DO ADMINISTRADOR
+typedef struct {
+    char senha[CARACTERES];
+    char username[CARACTERES];
+    int numeroConta;
+} admin;
 
 
 // STRUCT PARA DATA DE NASCIMENTO
@@ -17,7 +25,7 @@ struct Data {
 };
 
 
-// STRUCT PARA ENDERE√áO
+// STRUCT PARA ENDERE«O
 struct Endereco {
     char rua[CARACTERES];
     int numero;
@@ -28,7 +36,7 @@ struct Endereco {
 };
 
 
-// STRUCT PARA CADASTRO DE USU√ÅRIOS
+// STRUCT PARA CADASTRO DE USU¡RIOS
 typedef struct { 
     char nome[CARACTERES];
     char username[CARACTERES];
@@ -37,24 +45,27 @@ typedef struct {
     int CPF;
     int RG;
     struct Endereco endereco;
-    int numeroConta;
     float saldo;
+    int numeroConta;
     double transactions[MAX_TRANSACTIONS];
     int transactionCount;
 } usuarios;
 
 
-// VARI√ÅEVIS GLOBAIS
+// VARI¡EVIS GLOBAIS
 typedef enum { false, true } bool;
 char buffer[CARACTERES];
-char usuario[CARACTERES]; 
+char usuario[CARACTERES];
 char senha[CARACTERES];
+usuarios cliente[100];
+int numerosUtilizados[NUM_CONTAS];
 float saldo;
 float saque;
 float deposito;
 int opcao;
 
 
+// FUN«√O DA LOGO DO SITE
 void logomarca() { 
     printf("\n");
     usleep(500000);
@@ -92,25 +103,25 @@ void logomarca() {
 }
 
 
-// FUN√á√ÉO P√ÅGINA INICIAL QUE SEMPRE RODAR√Å NO LOOP
+// FUN«√O P¡GINA INICIAL QUE SEMPRE RODAR¡ NO LOOP
 void cabecalho() {
     printf("\n\n");
     printf("++++++++++++++++++++++++++++++++++++++++++++++\n");
     printf("+                                            +\n");
     printf("+                    BANCO                   +\n");
     printf("+                 C-SECUREPAY                +\n");
-    printf("+          Seu banco, sua seguran√ßa.         +\n");
-    printf("+      Autenticidade em cada transa√ß√£o.      +\n");
+    printf("+          Seu banco, sua seguranÁa.         +\n");
+    printf("+      Autenticidade em cada transaÁ„o.      +\n");
     printf("+                                            +\n");
     printf("++++++++++++++++++++++++++++++++++++++++++++++\n");
     printf("\n\n");
 }
 
 
-// FUN√á√ÉO DA P√ÅGINA DE ENTRADA DO PROGRAMA
+// FUN«√O DA P¡GINA DE ENTRADA DO PROGRAMA
 void menu_principal() {
     printf("\n");
-    printf("Bem-vindo ao C-SECUREPAY: O melhor banco para voc√™!");
+    printf("Bem-vindo ao C-SECUREPAY: O melhor banco para vocÍ!");
     sleep(2);
     printf("\n");
     printf("----------------------------------------\n");
@@ -121,6 +132,8 @@ void menu_principal() {
     printf("\n\n");
 }
 
+
+// FUN«√O QUE ANIMA O TEXTO COMO SE FOSSE UM ROB‘ DIGITANDO
 void animarTexto(const char* texto, int velocidade) {
     for (int i = 0; i < strlen(texto); i++) {
         printf("%c", texto[i]);
@@ -130,18 +143,20 @@ void animarTexto(const char* texto, int velocidade) {
 }
 
 
+// FUN«√O DE CADASTRO DE USU¡RIO EM ANDAMENTO
 void cadastro_titulo() {
     printf("\n");
-    printf("CARREGANDO INFORMA√á√ïES PARA CRIA√á√ÉO DE CONTA...\n");
+    printf("CARREGANDO INFORMA«’ES PARA CRIA«√O DE CONTA...\n");
     sleep(1);
     printf("\n");
     printf("------------------------------------------------\n");
-    animarTexto("+               CADASTRANDO USU√ÅRIO           +\n", 50);
+    animarTexto("+               CADASTRANDO USU¡RIO           +\n", 50);
     printf("------------------------------------------------\n");
     printf("\n\n");
 }
 
 
+// FUN«√O DE CADASTRO DE USU¡RIO FINALIZADO
 void cadastro_finalizado() {
     printf("\n");
     sleep(2);
@@ -153,7 +168,8 @@ void cadastro_finalizado() {
 }
 
 
-void cadastro_error() {
+// ERRO DE CADASTRO DE USU¡RIO
+void erro_cadastro() {
     printf("\n");
     sleep(2);
     printf("\n");
@@ -165,6 +181,17 @@ void cadastro_error() {
 }
 
 
+void erro_usuario() {
+        printf("Usu·rio n„o encontrado.\n");
+        printf("Deseja se cadastrar para ter acesso ao sistema? [Caso digite N√O o sistema se encerrar·]\n");
+        printf("-----------------------\n");
+        printf("+      [ 1 ] SIM      +\n");
+        printf("+      [ 2 ] N√O      +\n");
+        printf("-----------------------\n");
+}
+
+
+// FUN«√O D EINICIALIZA«√O DE SISTEMA
 void sistema_titulo() {
     printf("\n"); 
     sleep(1);
@@ -175,21 +202,24 @@ void sistema_titulo() {
 }
 
 
+// FUN«√O DE MENU PRINCIPAL DO SISTEMA LOGADO
 void menu_banco() {
     printf("\n");
-    animarTexto("Selecione o servi√ßo que deseja utilizar:", 50);
+    animarTexto("Selecione o serviÁo que deseja utilizar:", 50);
     sleep(2);
     printf("\n");
     animarTexto("----------------------------------------\n", 10);
     animarTexto("+  [ 1 ]  VERIFICAR SALDO DA CONTA     +\n", 10);
     animarTexto("+  [ 2 ]  SACAR DINHEIRO DA CONTA      +\n", 10);
     animarTexto("+  [ 3 ]  DEPOSITAR DINHEIRO NA CONTA  +\n", 10);
-    animarTexto("+  [ 4 ]  REALIZAR LOGOUT DA CONTA     +\n", 10);
+    animarTexto("+  [ 4 ]  MUDAR DADOS DA CONTA         +\n", 10);
+    animarTexto("+  [ 5 ]  REALIZAR LOGOUT DA CONTA     +\n", 10);
     animarTexto("----------------------------------------\n", 10);
     printf("\n\n");
 }
 
 
+// FUN«√O DE MOSTRAR SALDO DO USU¡RIO LOGADO
 int imprimirSaldo(const char* usuario) {
     system("cls");
     sleep(2);
@@ -205,7 +235,75 @@ int imprimirSaldo(const char* usuario) {
 }
 
 
-// CRIA O ARQUIVO PARA DATABASE CASO ELE N√ÉO EXISTA 
+void cadastro_dados() {
+    printf("\n");
+    printf("--------------------------------------------------\n");
+    printf("   CADASTRAMENTO DE DADOS CONCLUÕDO COM SUCESSO!  \n");
+    printf("--------------------------------------------------\n");
+    printf("\n");
+}
+
+
+void analise_saque() {
+    printf("\n");
+    sleep(1);
+    printf("----------------------------------------\n");
+    animarTexto("+             AN¡LISE DE SAQUE         +\n", 50);
+    printf("----------------------------------------\n");
+    printf("\n"); 
+}
+
+
+void saldo_insuficiente() {
+    printf("\n\n");
+    sleep(2);
+    printf("----------------------------------------\n");
+    animarTexto("+           SALDO INSUFICIENTE         +\n", 50);
+    printf("----------------------------------------\n");
+}
+
+
+void erro_saque() {
+    printf("\n\n");
+    sleep(2);
+    printf("----------------------------------------\n");
+    animarTexto("+              SACANDO SALDO...        +\n", 50);
+    printf("----------------------------------------\n");
+    printf("\n");
+}
+
+
+void analise_deposito() {
+    printf("\n");
+    sleep(1);
+    printf("----------------------------------------\n");
+    animarTexto("+           AN¡LISE DE DEPOSITO        +\n", 50);
+    printf("----------------------------------------\n");
+    printf("\n"); 
+}
+
+
+void erro_deposito() {
+    printf("\n\n");
+    sleep(2);
+    printf("----------------------------------------\n");
+    animarTexto("+               ERRO DE DEP”SITO       +\n", 50);
+    printf("----------------------------------------\n");
+    printf("\n");
+}
+
+
+void depositando() {
+    printf("\n\n");
+    sleep(2);
+    printf("----------------------------------------\n");
+    animarTexto("+            DEPOSITANDO SALDO...      +\n", 50);
+    printf("----------------------------------------\n");
+    printf("\n");
+}
+
+
+// CRIA O ARQUIVO PARA DATABASE CASO ELE N√O EXISTA 
 void criar_arquivo(char* nome_arquivo) {
     char nome_com_extensao[CARACTERES + 4];
     if (strlen(nome_arquivo) + 4 > CARACTERES) {
@@ -223,7 +321,7 @@ void criar_arquivo(char* nome_arquivo) {
 }
 
 
-// FUN√á√ÉO PARA VALIDA√á√ÉO DE SENHA E USU√ÅRIO
+// FUN«√O PARA VALIDA«√O DE SENHA E USU¡RIO
 int verificarUsuario(const char* usuario, const char* senha) {
     FILE* arquivo = fopen("cadastro.txt", "r");
     if (arquivo == NULL) {
@@ -267,7 +365,7 @@ int verificarUsuario(const char* usuario, const char* senha) {
 }
 
 
-// FUN√á√ÉO PARA VERIFICA√á√ÉO E VALIDA√á√ÉO DE CPF
+// FUN«√O PARA VERIFICA«√O E VALIDA«√O DE CPF
 bool validar_CPF(const char* cpf) {
     if (strlen(cpf) != 11) {
         return false;
@@ -301,7 +399,7 @@ bool validar_CPF(const char* cpf) {
 }
 
 
-// FUN√á√ÉO PARA VERIFICA√á√ÉO E VALIDA√á√ÉO DE RG
+// FUN«√O PARA VERIFICA«√O E VALIDA«√O DE RG
 bool validar_RG(const char* rg) {
     if (strlen(rg) != 7) {
         return false;
@@ -335,7 +433,7 @@ bool validar_RG(const char* rg) {
 }
 
 
-// FUN√á√ÉO PARA VERIFICA√á√ÉO E VALIDA√á√ÉO DE CEP
+// FUN«√O PARA VERIFICA«√O E VALIDA«√O DE CEP
 bool validar_CEP(const char* cep) {
     if (strlen(cep) != 8) {
         return false;
@@ -366,6 +464,23 @@ bool validar_CEP(const char* cep) {
         return false;
     }
     return true;
+}
+
+
+int Gerador_Contas(int min, int max, int *numerosUtilizados, int numNumerosUtilizados) {
+    int numero;
+    int validacao;
+    do {
+        numero = min + rand() % (max - min + 1);
+        validacao = 0;
+        for (int i = 0; i < numNumerosUtilizados; i++) {
+            if (numerosUtilizados[i] == numero) {
+                validacao = 1;
+                break;
+            }
+        }
+    } while (validacao);
+    return numero;
 }
 
 
@@ -419,28 +534,28 @@ void modificarSaldo(const char* arquivo, const char* usuario, float novoSaldo) {
 
     FILE* fpTemporario = fopen("temporario.txt", "w");
     if (fpTemporario == NULL) {
-        printf("Erro ao criar o arquivo tempor√°rio.\n");
+        printf("Erro ao criar o arquivo tempor·rio.\n");
         fclose(fpOriginal);
         return;
     }
 
-    char buffer[256];
+    char linha[256];
+    int usuarioEncontrado = 0;
 
-    while (fgets(buffer, sizeof(buffer), fpOriginal)) {
-        if (strstr(buffer, "USERNAME: ") != NULL) {
-            char* token = strtok(buffer, ":");
-            token = strtok(NULL, ":");
-            if (strcmp(usuario, token) == 0) {
-                fprintf(fpTemporario, "SALDO: %.2f\n", novoSaldo);
-                continue;
+    while (fgets(linha, sizeof(linha), fpOriginal)) {
+        if (strstr(linha, "USERNAME: ") != NULL && strstr(linha, usuario) != NULL) {
+            fputs(linha, fpTemporario);
+            usuarioEncontrado = 1;
+            if (fgets(linha, sizeof(linha), fpOriginal) != NULL) {
+                fputs(linha, fpTemporario);
+                if (fgets(linha, sizeof(linha), fpOriginal) != NULL) {
+                    fputs("SALDO: ", fpTemporario);
+                    fprintf(fpTemporario, "%.2f\n", novoSaldo);
+                }
             }
+        } else {
+            fputs(linha, fpTemporario);
         }
-        
-        if (strstr(buffer, "SALDO: ") != NULL) {
-            continue;
-        }
-
-        fputs(buffer, fpTemporario);
     }
 
     fclose(fpOriginal);
@@ -449,17 +564,17 @@ void modificarSaldo(const char* arquivo, const char* usuario, float novoSaldo) {
     remove(arquivo);
     rename("temporario.txt", arquivo);
 
-    printf("Saldo atualizado com sucesso!\n");
+    if (usuarioEncontrado) {
+        printf("Saldo atualizado com sucesso!\n");
+    } else {
+        printf("Usu·rio n„o encontrado.\n");
+    }
 }
 
 
 int sacarSaldo(const char* usuario) {
     system("cls");
-    printf("\n");
-    sleep(1);
-    printf("----------------------------------------\n");
-    animarTexto("+      AN√ÅLISE DE RETIRADA DE SALDO    +\n", 50);
-    printf("----------------------------------------\n");
+    analise_saque();
     while (1) {
         animarTexto("\n\nDigite o valor que deseja retirar: R$ ", 50);
         fgets(buffer, sizeof(buffer), stdin);
@@ -468,44 +583,29 @@ int sacarSaldo(const char* usuario) {
         if (strcmp(buffer, "") == 0) {
             printf("\n\n");
             sleep(2);
-            printf("----------------------------------------\n");
-            animarTexto("+               ERRO DE SAQUE          +\n", 50);
-            printf("----------------------------------------\n");
-            animarTexto("\nImposs√≠vel realizar saque! O valor n√£o pode ficar vazio...", 50);
+            erro_saque();
+            animarTexto("\nImpossÌvel realizar saque! O valor n„o pode ficar vazio...", 50);
             continue;
         } else {
             sscanf(buffer,"%f", &saque);
             if (saque > saldo) {
-                printf("\n\n");
-                sleep(2);
-                printf("----------------------------------------\n");
-                animarTexto("+           SALDO INSUFICIENTE         +\n", 50);
-                printf("----------------------------------------\n");
-                animarTexto("\nImposs√≠vel realizar saque! Solicita√ß√£o de saque acima do saldo atual...", 50);
+                saldo_insuficiente();
+                animarTexto("\nImpossÌvel realizar saque! SolicitaÁ„o de saque acima do saldo atual...", 50);
                 continue;
             } else if (saque <= 0){
                 printf("\n\n");
                 sleep(2);
-                printf("----------------------------------------\n");
-                animarTexto("+               ERRO DE SAQUE          +\n", 50);
-                printf("----------------------------------------\n");
-                animarTexto("\nImposs√≠vel realizar saque! Solicita√ß√£o de saque n√£o pode ser igual ou inferior a R$ 00,00...", 50);
+                erro_saque();
+                animarTexto("\nImpossÌvel realizar saque! SolicitaÁ„o de saque n„o pode ser igual ou inferior a R$ 00,00...", 50);
                 continue;
             } else {
                 sleep(1);
                 obterSaldo(usuario, &saldo);
                 saldo = saldo - saque;
                 modificarSaldo("cadastro.txt", usuario, saldo);
-                printf("----------------------------------------\n");
-                animarTexto("+              SACANDO SALDO...        +\n", 50);
-                printf("----------------------------------------\n");
-                printf("\n\n");
-                sleep(2);
-                printf("----------------------------------------\n");
-                animarTexto("+         SAQUE REALIZADO COM √äXITO     +\n", 50);
-                printf("----------------------------------------\n");
-                animarTexto("\nSaque efetivado com sucesso! O C-SECUREBAK agradece a prefer√™ncia!", 50);
-                printf("\n\nSeu saldo atual agora √©: R$ %.2f\n", saldo);
+                erro_saque();
+                animarTexto("\nSaque efetivado com sucesso! O C-SECUREBAK agradece a preferÍncia!", 50);
+                printf("\n\nSeu saldo atual agora È: R$ %.2f\n", saldo);
                 system("pause");
                 break;
             }
@@ -516,50 +616,32 @@ int sacarSaldo(const char* usuario) {
 
 int depositarSaldo(const char* usuario) {
     system("cls");
-    printf("\n");
-    sleep(1);
-    printf("----------------------------------------\n");
-    animarTexto("+           AN√ÅLISE DE DEPOSITO        +\n", 50);
-    printf("----------------------------------------\n");
+    analise_deposito();
     while (1) {
         animarTexto("\n\nDigite o valor que deseja depositar: R$ ", 50);
         fgets(buffer, sizeof(buffer), stdin);
         buffer[strcspn(buffer, "\n")] = '\0';
         obterSaldo(usuario, &saldo);
         if (strcmp(buffer, "") == 0) {
-            printf("\n\n");
-            printf("\n\n");
-            sleep(2);
-            printf("----------------------------------------\n");
-            animarTexto("+               ERRO DE DEP√ìSITO       +\n", 50);
-            printf("----------------------------------------\n");
-            animarTexto("\nImposs√≠vel realizar dep√≥sito! Solicita√ß√£o de dep√≥sito n√£o pode estar vazia...", 50);
+            erro_deposito();
+            animarTexto("\nImpossÌvel realizar depÛsito! SolicitaÁ„o de depÛsito n„o pode estar vazia...", 50);
             continue;
         } else {
             sscanf(buffer,"%f", &deposito);
             if (deposito <= 0){
-                printf("\n\n");
-                sleep(2);
-                printf("----------------------------------------\n");
-                animarTexto("+               ERRO DE DEP√ìSITO       +\n", 50);
-                printf("----------------------------------------\n");
-                animarTexto("\nImposs√≠vel realizar dep√≥sito! Solicita√ß√£o de dep√≥sito n√£o pode ser igual ou inferior a R$ 00,00...", 50);
+                erro_deposito();
+                animarTexto("\nImpossÌvel realizar depÛsito! SolicitaÁ„o de depÛsito n„o pode ser igual ou inferior a R$ 00,00...", 50);
                 continue;
             } else {
                 sleep(1);
                 obterSaldo(usuario, &saldo);
                 saldo = saldo + deposito;
                 modificarSaldo("cadastro.txt", usuario, saldo);
-                printf("----------------------------------------\n");
-                animarTexto("+            DEPOSITANDO SALDO...      +\n", 50);
-                printf("----------------------------------------\n");
+                depositando();
                 printf("\n\n");
                 sleep(2);
-                printf("----------------------------------------\n");
-                animarTexto("+                DEPOSITANDO...        +\n" , 50);
-                printf("----------------------------------------\n");
-                animarTexto("\nDep√≥sito efetivado com sucesso! O C-SECUREBAK agradece a prefer√™ncia!", 50);
-                printf("\n\nSeu saldo atual agora √©: R$ %.2f", saldo);
+                animarTexto("\nDepÛsito efetivado com sucesso! O C-SECUREBAK agradece a preferÍncia!", 50);
+                printf("\n\nSeu saldo atual agora È: R$ %.2f", saldo);
                 system("pause");
                 break;
             }
@@ -568,7 +650,66 @@ int depositarSaldo(const char* usuario) {
 }
 
 
-// FUN√á√ÉO DE CADASTRAMENTO DE USU√ÅRIOS
+
+void modificarNome(const char* arquivo, const char* novoNome) {
+    FILE* fpOriginal = fopen(arquivo, "r");
+    if (fpOriginal == NULL) {
+        printf("Erro ao abrir o arquivo original.\n");
+        return;
+    }
+
+    FILE* fpTemporario = fopen("temporario.txt", "w");
+    if (fpTemporario == NULL) {
+        printf("Erro ao criar o arquivo tempor·rio.\n");
+        fclose(fpOriginal);
+        return;
+    }
+
+    fseek(fpOriginal, 0, SEEK_END); // Move o cursor para o final do arquivo
+    long int tamanho = ftell(fpOriginal); // ObtÈm o tamanho do arquivo
+    fseek(fpOriginal, 0, SEEK_SET); // Move o cursor para o inÌcio do arquivo
+
+    char linha[256];
+    int usuarioEncontrado = 0;
+
+    while (ftell(fpOriginal) < tamanho) {
+        fgets(linha, sizeof(linha), fpOriginal);
+        if (strstr(linha, "USERNAME: ") != NULL && strstr(linha, usuario) != NULL) {
+            usuarioEncontrado = 1;
+            fputs(linha, fpTemporario); // Copia a linha USERNAME para o arquivo tempor·rio
+
+            // Atualiza o nome do usu·rio
+            for (int i = 0; i < 12; i++) {
+                fgets(linha, sizeof(linha), fpOriginal); // LÍ as prÛximas 12 linhas
+                fputs(linha, fpTemporario);
+            }
+
+            fprintf(fpTemporario, "NOME: %s", novoNome);
+
+            // Verifica se o nome possui uma quebra de linha e a copia se houver
+            if (linha[strlen(linha) - 1] == '\n') {
+                fputc('\n', fpTemporario);
+            }
+        } else {
+            fputs(linha, fpTemporario);
+        }
+    }
+
+    fclose(fpOriginal);
+    fclose(fpTemporario);
+
+    remove(arquivo);
+    rename("temporario.txt", arquivo);
+
+    if (usuarioEncontrado) {
+        printf("Nome atualizado com sucesso!\n");
+    } else {
+        printf("Usu·rio n„o encontrado.\n");
+    }
+}
+
+ 
+// FUN«√O DE CADASTRAMENTO DE USU¡RIOS
 int cadastrar_usuario(usuarios *usuario) {
     system("cls");
     cadastro_titulo();
@@ -581,7 +722,7 @@ int cadastrar_usuario(usuarios *usuario) {
         fgets(usuario->nome, sizeof(usuario->nome), stdin);
         usuario->nome[strcspn(usuario->nome, "\n")] = '\0';
         if (strcmp(usuario->nome, "") == 0 || strlen(usuario->nome) < 10) {
-            printf("Nome Inv√°lido. Digite seu Nome Completo novamente...\n");
+            printf("Nome Inv·lido. Digite seu Nome Completo novamente...\n");
             continue;
         } else {
             break;
@@ -593,12 +734,12 @@ int cadastrar_usuario(usuarios *usuario) {
         fgets(buffer, sizeof(buffer), stdin);
         buffer[strcspn(buffer, "\n")] = '\0';
         if (strcmp(buffer, "") == 0) {
-            printf("Dia Inv√°lido. Digite seu dia de nascimento corretamente...\n");
+            printf("Dia Inv·lido. Digite seu dia de nascimento corretamente...\n");
             continue;
         } else {
             sscanf(buffer,"%d", &usuario->nascimento.dia);
             if (usuario->nascimento.dia > 31 || usuario->nascimento.dia < 1) {
-                printf("Dia Inv√°lido. Digite seu dia de nascimento corretamente...\n");
+                printf("Dia Inv·lido. Digite seu dia de nascimento corretamente...\n");
                 continue;
             } else {
                 break;
@@ -606,16 +747,16 @@ int cadastrar_usuario(usuarios *usuario) {
         }
     }
     while (1) {
-        animarTexto("O M√™s referente ao seu nascimento: ", 50);
+        animarTexto("O MÍs referente ao seu nascimento: ", 50);
         fgets(buffer, sizeof(buffer), stdin);
         buffer[strcspn(buffer, "\n")] = '\0';
         if (strcmp(buffer, "") == 0) {
-            printf("M√™s Inv√°lido. Digite seu M√™s de nascimento corretamente...\n");
+            printf("MÍs Inv·lido. Digite seu MÍs de nascimento corretamente...\n");
             continue;
         } else {
             sscanf(buffer,"%d", &usuario->nascimento.mes);
-            if (usuario->nascimento.mes > 31 || usuario->nascimento.mes < 1) {
-                printf("M√™s Inv√°lido. Digite seu M√™s de nascimento corretamente...\n");
+            if (usuario->nascimento.mes > 12 || usuario->nascimento.mes < 1) {
+                printf("MÍs Inv·lido. Digite seu MÍs de nascimento corretamente...\n");
                 continue;
             } else{
                 break;
@@ -627,25 +768,25 @@ int cadastrar_usuario(usuarios *usuario) {
         fgets(buffer, sizeof(buffer), stdin);
         buffer[strcspn(buffer, "\n")] = '\0';
         if (strcmp(buffer, "") == 0) {
-            printf("Ano Inv√°lido. Digite seu ano de nascimento corretamente...\n");
+            printf("Ano Inv·lido. Digite seu ano de nascimento corretamente...\n");
             continue;
         } else {
             sscanf(buffer,"%d", &usuario->nascimento.ano);
             if (usuario->nascimento.ano > 2023 || usuario->nascimento.ano < 1900) {
-                printf("Ano Inv√°lido. Digite seu ano de nascimento corretamente...\n");
+                printf("Ano Inv·lido. Digite seu ano de nascimento corretamente...\n");
                 continue;
             } else{
                 break;
             }
         }
     }
-    animarTexto("Informe os seguintes Dados Pessoais: [SOMENTE N√öMEROS]\n", 50);
+    animarTexto("Informe os seguintes Dados Pessoais: [SOMENTE N⁄MEROS]\n", 50);
     while (1) {
         animarTexto("CPF: ", 50);
         fgets(buffer, sizeof(buffer), stdin);
         buffer[strcspn(buffer, "\n")] = '\0';
         if (strcmp(buffer, "") == 0 || !validar_CPF(buffer)) {
-            printf("CPF Inv√°lido. Digite seu CPF corretamente...\n");
+            printf("CPF Inv·lido. Digite seu CPF corretamente...\n");
             continue;
         } else {
             sscanf(buffer,"%d", &usuario->CPF);
@@ -657,31 +798,31 @@ int cadastrar_usuario(usuarios *usuario) {
         fgets(buffer, sizeof(buffer), stdin);
         buffer[strcspn(buffer, "\n")] = '\0';
         if (strcmp(buffer, "") == 0 || !validar_RG(buffer)) {
-            printf("RG Inv√°lido. Digite seu RG corretamente...\n");
+            printf("RG Inv·lido. Digite seu RG corretamente...\n");
             continue;
         } else {
             sscanf(buffer,"%d", &usuario->RG);
             break;
         }
     }
-    animarTexto("Digite seu endere√ßo abaixo:\n", 50);
+    animarTexto("Digite seu endereÁo abaixo:\n", 50);
     while (1) {
         animarTexto("Rua: ", 50);
         fgets(usuario->endereco.rua, sizeof(usuario->endereco.rua), stdin);
         usuario->endereco.rua[strcspn(usuario->endereco.rua, "\n")] = '\0';
         if (strcmp(usuario->endereco.rua, "") == 0) {
-            printf("Rua Inv√°lida. Digite o endere√ßo da sua rua corretamente...\n");
+            printf("Rua Inv·lida. Digite o endereÁo da sua rua corretamente...\n");
             continue;
         } else {
             break;
         }
     }
     while (1) {
-        animarTexto("N√∫mero: ", 50);
+        animarTexto("N˙mero: ", 50);
         fgets(buffer, sizeof(buffer), stdin);
         buffer[strcspn(buffer, "\n")] = '\0';
         if (strcmp(buffer, "") == 0) {
-            printf("N√∫mero Inv√°lido. Digite seu N√∫mero de endere√ßo corretamente...\n");
+            printf("N˙mero Inv·lido. Digite seu N˙mero de endereÁo corretamente...\n");
             continue;
         } else {
             int todos_numeros = 1;
@@ -693,7 +834,7 @@ int cadastrar_usuario(usuarios *usuario) {
             }
 
             if (!todos_numeros) {
-                printf("N√∫mero Inv√°lido. Digite seu N√∫mero de endere√ßo corretamente...\n");
+                printf("N˙mero Inv·lido. Digite seu N˙mero de endereÁo corretamente...\n");
                 continue;
             } else {
                 sscanf(buffer, "%d", &usuario->endereco.numero);
@@ -707,7 +848,7 @@ int cadastrar_usuario(usuarios *usuario) {
         fgets(usuario->endereco.setor, sizeof(usuario->endereco.setor), stdin);
         usuario->endereco.setor[strcspn(usuario->endereco.setor, "\n")] = '\0';
         if (strcmp(usuario->endereco.setor, "") == 0) {
-            printf("Setor Residencial Inv√°lido. Digite o Setor Residencial em que voc√™ reside corretamente...\n");
+            printf("Setor Residencial Inv·lido. Digite o Setor Residencial em que vocÍ reside corretamente...\n");
             continue;
         } else {
             break;
@@ -718,7 +859,7 @@ int cadastrar_usuario(usuarios *usuario) {
         fgets(usuario->endereco.cidade, sizeof(usuario->endereco.cidade), stdin);
         usuario->endereco.cidade[strcspn(usuario->endereco.cidade, "\n")] = '\0';
         if (strcmp(usuario->endereco.cidade, "") == 0) {
-            printf("Cidade Inv√°lido. Digite a Cidade em que voc√É¬™ reside corretamente...\n");
+            printf("Cidade Inv·lido. Digite a Cidade em que voc√™ reside corretamente...\n");
             continue;
         } else {
             break;
@@ -729,18 +870,18 @@ int cadastrar_usuario(usuarios *usuario) {
         fgets(usuario->endereco.estado, sizeof(usuario->endereco.estado), stdin);
         usuario->endereco.estado[strcspn(usuario->endereco.estado, "\n")] = '\0';
         if (strcmp(usuario->endereco.estado, "") == 0) {
-            printf("Estado Inv√°lido. Digite o Estado em que voc√™ reside corretamente...\n");
+            printf("Estado Inv·lido. Digite o Estado em que vocÍ reside corretamente...\n");
             continue;
         } else {
             break;
         }
     }
     while (1) {
-        animarTexto("CEP: [APENAS N√öMEROS] ", 50);
+        animarTexto("CEP: [APENAS N⁄MEROS] ", 50);
         fgets(buffer, sizeof(buffer), stdin);
         buffer[strcspn(buffer, "\n")] = '\0';
         if (strcmp(buffer, "") == 0 || !validar_CEP(buffer)) {
-            printf("CEP Inv√°lido. Digite seu CEP corretamente...\n");
+            printf("CEP Inv·lido. Digite seu CEP corretamente...\n");
             continue;
         } else {
             sscanf(buffer, "%d", &usuario->endereco.cep);
@@ -748,18 +889,14 @@ int cadastrar_usuario(usuarios *usuario) {
         }
                 
     }
-    printf("\n");
-    printf("--------------------------------------------------\n");
-    printf("   CADASTRAMENTO DE DADOS CONCLU√çDO COM SUCESSO!  \n");
-    printf("--------------------------------------------------\n");
-    printf("\n");
-    animarTexto("Ap√≥s o cadastramento de dados pessoais, agora escolha um nome de usu√°rio e senha para acesso a sua conta\n", 50);
+    cadastro_dados();
+    animarTexto("ApÛs o cadastramento de dados pessoais, agora escolha um nome de usu·rio e senha para acesso a sua conta\n", 50);
     while (1) {
         animarTexto("Digite seu nome de usuario: ", 50);
         fgets(usuario->username, sizeof(usuario->username), stdin);
         usuario->username[strcspn(usuario->username, "\n")] = '\0';
         if (strcmp(usuario->username, "") == 0) {
-            printf("Nome de usu√°rio Inv√°lido. Digite o nome de usu√°rio em que voc√™ reside corretamente...\n");
+            printf("Nome de usu·rio Inv·lido. Digite o nome de usu·rio em que vocÍ reside corretamente...\n");
             continue;
         } else {
             break;
@@ -770,48 +907,59 @@ int cadastrar_usuario(usuarios *usuario) {
         fgets(usuario->password, sizeof(usuario->password), stdin);
         usuario->password[strcspn(usuario->password, "\n")] = '\0';
         if (strcmp(usuario->password, "") == 0) {
-            printf("Senha Inv√°lido. Digite o Estado em que voc√™ reside corretamente...\n");
+            printf("Senha Inv·lido. Digite o Estado em que vocÍ reside corretamente...\n");
             continue;
         } else {
             break;
         }
     }
-    animarTexto("Para finalizar informe o valor de dep√≥sito que deseja inserir em sua conta:\n", 50);
+    animarTexto("Para finalizar informe o valor de depÛsito que deseja inserir em sua conta:\n", 50);
     while (1) {
-        animarTexto("Dep√≥sito Inicial: R$ ", 50);
+        animarTexto("DepÛsito Inicial: R$ ", 50);
         fgets(buffer, sizeof(buffer), stdin);
         buffer[strcspn(buffer, "\n")] = '\0';
         if (strcmp(buffer, "") == 0) {
-            printf("Saldo Inv√°lido. Por favor digite um valor v√°lido para o dep√≥sito\n");
+            printf("Saldo Inv·lido. Por favor digite um valor v·lido para o depÛsito\n");
             continue;
         } else {
             sscanf(buffer,"%f", &usuario->saldo);
             if (usuario->saldo < 1) {
-                printf("Saldo Inv√°lido. Por favor digite um valor v√°lido para o dep√≥sito\n");
+                printf("Saldo Inv·lido. Por favor digite um valor v·lido para o depÛsito\n");
                 continue;
             } else if (usuario->saldo > 1000000000){
-                printf("Saldo muito grande para um dep√≥sito inicial. Deposite um valor consider√°vel para sua aprova√ß√£o!");
+                printf("Saldo muito grande para um depÛsito inicial. Deposite um valor consider·vel para sua aprovaÁ„o!");
             } else {
                 break;
             }
         }
     }
 
+    animarTexto("\n\nCRIANDO N⁄MERO DE CONTA, AGUARDE...", 50);
+
+    for (int i = 0; i < 1; i++) {
+        int numeroConta = Gerador_Contas(10000000, 99999999, numerosUtilizados, i);
+        numerosUtilizados[i] = numeroConta;
+        printf("\nN⁄MERO DE CONTA: %08d\n\n", numeroConta);
+        usuario->numeroConta = numeroConta;
+    }
+
+    animarTexto("N⁄MERO GERADO! AGUARDE O PROCESSAMENTO...", 50);
+
     // CRIANDO ARQUIVO PARA ARMAZENAR DADOS CADASTRADOS
     FILE* cadastro;
     cadastro = fopen("cadastro.txt", "a+");
     if (cadastro == NULL) {
-        cadastro_error();
+        erro_cadastro();
         return 1;
     }
     fprintf(cadastro, "NOME: %s\n", usuario->nome);
     fprintf(cadastro, "DIA: %.2d\n", usuario->nascimento.dia);
-    fprintf(cadastro, "M√äS: %.2d\n", usuario->nascimento.ano);
-    fprintf(cadastro, "ANO: %d\n", usuario->nascimento.mes);
+    fprintf(cadastro, "M S: %.2d\n", usuario->nascimento.mes);
+    fprintf(cadastro, "ANO: %d\n", usuario->nascimento.ano);
     fprintf(cadastro, "CPF: %d\n", usuario->CPF);
     fprintf(cadastro, "RG: %d\n", usuario->RG);
     fprintf(cadastro, "RUA: %s\n", usuario->endereco.rua);
-    fprintf(cadastro, "N√öMERO: %d\n", usuario->endereco.numero);
+    fprintf(cadastro, "N⁄MERO: %d\n", usuario->endereco.numero);
     fprintf(cadastro, "SETOR: %s\n", usuario->endereco.setor);
     fprintf(cadastro, "CIDADE: %s\n", usuario->endereco.cidade);
     fprintf(cadastro, "ESTADO: %s\n", usuario->endereco.estado);
@@ -822,16 +970,17 @@ int cadastrar_usuario(usuarios *usuario) {
     fprintf(cadastro, "SALDO: %.2f\n\n", usuario->saldo);
     fclose(cadastro);
     cadastro_finalizado();
+    system("\npause");
 }
 
 
-// FUN√á√ÉO DE TELA DE LOGIN DO USU√ÅRIO
+// FUN«√O DE TELA DE LOGIN DO USU¡RIO
 void acessar_sistema() {
-    printf("Nome de Usu√°rio: ");
+    printf("Nome de Usu·rio: ");
     fflush(stdin);
     fgets(usuario, CARACTERES, stdin);
     usuario[strcspn(usuario, "\n")] = '\0';
-    printf("Senha de Usu√°rio: ");
+    printf("Senha de Usu·rio: ");
     fflush(stdin);
     fgets(senha, CARACTERES, stdin);
     senha[strcspn(senha, "\n")] = '\0';
@@ -839,7 +988,7 @@ void acessar_sistema() {
     if (usuarioValido == 2) {
         sistema();
     } else if (usuarioValido == 1) {
-        printf("Usu√°rio v√°lido, mas a senha est√° incorreta.\n");
+        printf("Usu·rio v·lido, mas a senha est· incorreta.\n");
         while (1) {
             printf("Digite a senha novamente: ");
             fflush(stdin);
@@ -856,20 +1005,14 @@ void acessar_sistema() {
             }
         }
     } else {
-        printf("Usu√°rio n√£o encontrado.\n");
-        printf("Deseja se cadastrar para ter acesso ao sistema? [Caso digite N√ÉO o sistema se encerrar√°]\n");
-        printf("-----------------------\n");
-        printf("+      [ 1 ] SIM      +\n");
-        printf("+      [ 2 ] N√ÉO      +\n");
-        printf("-----------------------\n");
-
+        erro_usuario();
         while (1) {
-            printf("\nSua op√ß√£o: ");
+            printf("\nSua opÁ„o: ");
             fgets(buffer, sizeof(buffer), stdin);
             buffer[strcspn(buffer, "\n")] = '\0';
 
             if (strcmp(buffer, "") == 0) {
-                printf("Op√ß√£o Inv√°lida. Por favor digite uma op√ß√£o v√°lida...\n");
+                printf("OpÁ„o Inv·lida. Por favor digite uma opÁ„o v·lida...\n");
                 continue;
             } else {
                 int numerico = 1;
@@ -879,16 +1022,15 @@ void acessar_sistema() {
                     }
                 }
                 if (!numerico) {
-                    printf("Op√ß√£o Inv√°lida. Por favor digite uma op√ß√£o v√°lida...\n");
+                    printf("OpÁ„o Inv·lida. Por favor digite uma opÁ„o v·lida...\n");
                     continue;
                 }
                 sscanf(buffer,"%d", &opcao);
                 if (opcao < 1 || opcao > 2) {
-                    printf("Op√ß√£o Inv√°lida. Por favor digite uma op√ß√£o v√°lida...\n");
+                    printf("OpÁ„o Inv·lida. Por favor digite uma opÁ„o v·lida...\n");
                     continue;
                 } else if (opcao == 1) {
-                    usuarios Cliente[1];
-                    cadastrar_usuario(Cliente);
+                    cadastrar_usuario(cliente);
                     break;
                 } else if (opcao == 2) {
                     break;
@@ -902,16 +1044,17 @@ void acessar_sistema() {
 
 int sistema() {
     sistema_titulo();
+    char novoNome[CARACTERES];
     do {
         system("cls");
         menu_banco();
         while (1) {
-            printf("Digite a op√ß√£o requerida: ", 50);
+            printf("Digite a opÁ„o requerida: ");
             fgets(buffer, sizeof(buffer), stdin);
             buffer[strcspn(buffer, "\n")] = '\0';
 
             if (strcmp(buffer, "") == 0) {
-                printf("Op√ß√£o Inv√°lida. Por favor digite uma op√ß√£o v√°lida...\n");
+                printf("OpÁ„o Inv·lida. Por favor digite uma opÁ„o v·lida...\n");
                 continue;
             } else {
                 sscanf(buffer,"%d", &opcao);
@@ -922,11 +1065,11 @@ int sistema() {
                     }
                 }
                 if (!numerico) {
-                    printf("Op√ß√£o Inv√°lida. Por favor digite uma op√ß√£o v√°lida...\n");
+                    printf("OpÁ„o Inv·lida. Por favor digite uma opÁ„o v·lida...\n");
                     continue;
                 }
                 if (opcao < 1) {
-                    printf("Op√ß√£o Inv√°lida. Por favor digite uma op√ß√£o v√°lida...\n");
+                    printf("OpÁ„o Inv·lida. Por favor digite uma opÁ„o v·lida...\n");
                     continue;
                 } else {
                     break;
@@ -944,20 +1087,26 @@ int sistema() {
                 depositarSaldo(usuario);
                 break;
             case 4:
+                printf("Digite o novo nome: ");
+                fflush(stdin);
+                fgets(novoNome, CARACTERES, stdin);
+                novoNome[strcspn(novoNome, "\n")] = '\0';
+                modificarNome("cadastro.txt", novoNome);
+                break;
+            case 5:
                 animarTexto("\n\nENCERRANDO SISTEMA...", 50);
                 break;
             default:
-                printf("\nOp√ß√£o Inv√°lida! Tente novamente...");
+                printf("\nOpÁ„o Inv·lida! Tente novamente...");
                 continue;
         }
-    
-    } while (opcao != 4);
+    } while (opcao != 5);
 }
 
 
 int main() {
     setlocale(LC_ALL, "Portuguese");
-    usuarios cliente[100];
+    srand(time(NULL));
     int opcao;
     system("cls");
     logomarca();
@@ -966,7 +1115,7 @@ int main() {
         system("cls");
         cabecalho();
         menu_principal();
-        printf("\nDigite a op√ß√£o requerida: ");
+        printf("\nDigite a opÁ„o requerida: ");
         scanf("%d", &opcao);
         switch (opcao) {
             case 1:
@@ -977,11 +1126,11 @@ int main() {
                 continue;
             break;
             default:
-                printf("\nOp√ß√£o Inv√°lida! Tente novamente...");
+                printf("\nOpÁ„o Inv·lida! Tente novamente...");
                 continue;
         }
     } while (opcao != 3);
     printf("\nSAINDO...");
-    printf("\nObrigado por utilizar os servi√ßos do C-Secure Bank! At√© logo...");
+    printf("\nObrigado por utilizar os serviÁos do C-Secure Bank! AtÈ logo...");
     return 0;
 }
